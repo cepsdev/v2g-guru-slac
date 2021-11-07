@@ -1,0 +1,8 @@
+#!/bin/bash
+rm CMakeFiles -rf
+rm cmake_install.cmake -f
+rm CMakeCache.txt -f
+rm Makefile -f
+rm lib* -f
+
+CEPSCORE=../../ceps/core MACHINES4CEPS=../../machines4ceps LOG4CEPS=../../log4ceps cmake ../ceps_plugin/ && make
