@@ -25,12 +25,23 @@ static mme4ceps_plugin plugn;
 static ceps::ast::node_t plugin_entrypoint_route_mme(ceps::ast::node_callparameters_t params){
     auto t = get_first_child(params);
     if (t) plugn.set_associated_ceps_block(t->clone());
+    auto on_initplugin =  ceps::ast::Nodeset{t}["setup"]["on_initplugin"].nodes();
+    for(auto e: on_initplugin){
+      ceps::ast::function_target_t func_id; 
+      ceps::ast::nodes_t args;
+      if (is_a_funccall(e,func_id,args)){
+          plugn.ceps_engine->queue_internal_event(func_id,args);
+      } else if (ceps::ast::is_a_symbol(e)){
+        auto& sym = ceps::ast::as_symbol_ref(e);
+        if (ceps::ast::kind(sym) == "Event") plugn.ceps_engine->queue_event(ceps::ast::name(sym),{}); 
+      }
+    }
     //tests::run_all();
     return nullptr;
 }
 
 static ceps::ast::node_t plugin_send_mme(ceps::ast::node_callparameters_t params){
-    auto msg = get_first_child(params); 
+    auto msg = get_first_child(params);
     auto ns = ceps::ast::Nodeset{msg}["mme"];
     auto header = ns["header"];
     auto mmtype = header["mmtype"];    
@@ -99,6 +110,6 @@ extern "C" void init_plugin(IUserdefined_function_registry* smc)
 {
   
   plugn.ceps_engine = plugn.plugin_master = plugin_master = smc->get_plugin_interface(); 
-  plugin_master->reg_ceps_plugin("route_homeplug_mme", plugin_entrypoint_route_mme);
+  plugin_master->reg_ceps_plugin("homeplug_mme_handler", plugin_entrypoint_route_mme);
   plugin_master->reg_ceps_plugin("send_homeplug_mme",plugin_send_mme);
 }

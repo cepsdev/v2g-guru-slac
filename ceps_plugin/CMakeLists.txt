@@ -22,5 +22,10 @@ include_directories($ENV{MACHINES4CEPS}/core/src_gen/logging)
 include_directories(include)
 include_directories(../include)
 
+link_directories($ENV{CEPSCORE}/bin)
 
 add_library(mm4ceps SHARED src/entrypoint.cpp src/mme2ceps.cpp src/ceps2mme.cpp src/mme2ceps_utils.cpp src/mme4ceps.cpp src/ceps2mme.cpp ../src/mme.cpp)
+
+
+
+target_link_libraries(mm4ceps cepscore)
