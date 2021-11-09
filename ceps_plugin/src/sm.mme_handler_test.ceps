@@ -1,0 +1,78 @@
+
+kind Systemstate;
+kind Event;
+
+Systemstate parameter;
+
+sm{
+    mme_handler_test;
+
+    cover{
+        edges_upto_1;
+    };
+
+    states{ Initial;
+            wait_for_cm_slac_parm_req; received_cm_slac_parm_req;
+            wait_for_cm_slac_parm_cnf; received_cm_slac_parm_cnf; 
+            wait_for_cm_start_atten_char_ind; received_cm_start_atten_char_ind;
+            wait_for_cm_mnbc_sound_ind; received_cm_mnbc_sound_ind;
+            wait_for_cm_atten_profile_ind;received_cm_atten_profile_ind;
+            wait_for_cm_atten_char_rsp;received_cm_atten_char_rsp;
+            wait_for_cm_validate_req;received_cm_validate_req;
+            wait_for_cm_validate_cnf;received_cm_validate_cnf;
+            wait_for_cm_slac_match_req;received_cm_slac_match_req;    
+            wait_for_cm_slac_match_cnf;received_cm_slac_match_cnf;
+            wait_for_cm_set_key_req;received_cm_set_key_req;
+            wait_for_cm_amp_map_req;received_cm_amp_map_req;
+            wait_for_cm_amp_map_cnf;received_cm_amp_map_cnf;
+            wait_for_cm_atten_char_ind;received_cm_atten_char_ind;
+    };
+
+    Actions{
+        for (e: on_cm_slac_parm_req, on_cm_slac_parm_cnf, on_cm_start_atten_char_ind, on_cm_mnbc_sound_ind, on_cm_atten_profile_ind,
+                 on_cm_atten_char_rsp, on_cm_validate_req, on_cm_validate_cnf, on_cm_slac_match_req,on_cm_slac_match_cnf,on_cm_set_key_req,
+                 on_cm_amp_map_req, on_cm_amp_map_cnf, on_cm_atten_char_ind
+            ){
+             e{
+                print ("**** Received event >>",argv(0),"<< with argument = >>",argv(1),"<<\n");
+             };
+        }
+
+        on_cm_slac_parm_req2{
+                parameter = argv(1);
+                print ("#### Details for >>",argv(0),"<< application_type = >>",parameter.application_type.content(),"<<\n");
+                print ("#### Details for >>",argv(0),"<< security_type = >>",parameter.security_type.content(),"<<\n");
+                print ("#### Details for >>",argv(0),"<< run_id = >>",parameter.run_id.content(),"<<\n");
+        };
+    };
+    
+    t{Initial;wait_for_cm_slac_parm_req;};
+    t{Initial;wait_for_cm_slac_parm_cnf;};
+    t{Initial;wait_for_cm_start_atten_char_ind;};
+    t{Initial;wait_for_cm_mnbc_sound_ind;};
+    t{Initial;wait_for_cm_atten_profile_ind;};
+    t{Initial;wait_for_cm_atten_char_rsp;};
+    t{Initial;wait_for_cm_validate_req;};
+    t{Initial;wait_for_cm_validate_cnf;};
+    t{Initial;wait_for_cm_slac_match_req;};    
+    t{Initial;wait_for_cm_slac_match_cnf;};
+    t{Initial;wait_for_cm_set_key_req;};
+    t{Initial;wait_for_cm_amp_map_req;};
+    t{Initial;wait_for_cm_amp_map_cnf;};
+    t{Initial;wait_for_cm_atten_char_ind;};
+
+    t{wait_for_cm_slac_parm_req;received_cm_slac_parm_req;evCM_SLAC_PARM_REQ;on_cm_slac_parm_req;on_cm_slac_parm_req2;};  
+    t{wait_for_cm_slac_parm_cnf;received_cm_slac_parm_cnf;evCM_SLAC_PARM_CNF;on_cm_atten_char_ind;};
+    t{wait_for_cm_start_atten_char_ind; received_cm_start_atten_char_ind;evCM_START_ATTEN_CHAR_IND;on_cm_start_atten_char_ind;};
+    t{wait_for_cm_mnbc_sound_ind; received_cm_mnbc_sound_ind;evCM_MNBC_SOUND_IND;on_cm_mnbc_sound_ind;};
+    t{wait_for_cm_atten_profile_ind;received_cm_atten_profile_ind;evCM_ATTEN_PROFILE_IND;on_cm_atten_profile_ind;};
+    t{wait_for_cm_atten_char_rsp;received_cm_atten_char_rsp;evCM_ATTEN_CHAR_RSP;on_cm_atten_char_rsp;};
+    t{wait_for_cm_validate_req;received_cm_validate_req;evCM_VALIDATE_REQ;on_cm_validate_req;};
+    t{wait_for_cm_validate_cnf;received_cm_validate_cnf;evCM_VALIDATE_CNF;on_cm_validate_cnf;};
+    t{wait_for_cm_slac_match_req;received_cm_slac_match_req;evCM_SLAC_MATCH_REQ;on_cm_slac_match_req;};
+    t{wait_for_cm_slac_match_cnf;received_cm_slac_match_cnf;evCM_SLAC_MATCH_CNF;on_cm_slac_match_cnf;};
+    t{wait_for_cm_set_key_req;received_cm_set_key_req;evCM_SET_KEY_REQ;on_cm_set_key_req;};
+    t{wait_for_cm_amp_map_req;received_cm_amp_map_req;evCM_AMP_MAP_REQ;on_cm_amp_map_req;};
+    t{wait_for_cm_amp_map_cnf;received_cm_amp_map_cnf;evCM_AMP_MAP_CNF;on_cm_amp_map_cnf;};
+    t{wait_for_cm_atten_char_ind;received_cm_atten_char_ind;evCM_ATTEN_CHAR_IND;on_cm_atten_char_ind;};
+};

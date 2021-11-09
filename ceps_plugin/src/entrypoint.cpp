@@ -18,6 +18,7 @@
 #include "mme4ceps.hpp"
 #include "mme2ceps_utils.hpp"
 #include "ceps2mme.hpp"
+#include "tests/test_handle_homeplug_mme.hpp"
 
 static Ism4ceps_plugin_interface* plugin_master = nullptr;
 static mme4ceps_plugin plugn;
@@ -36,7 +37,8 @@ static ceps::ast::node_t plugin_entrypoint_route_mme(ceps::ast::node_callparamet
         if (ceps::ast::kind(sym) == "Event") plugn.ceps_engine->queue_event(ceps::ast::name(sym),{}); 
       }
     }
-    //tests::run_all();
+    if (ceps::ast::Nodeset{t}["setup"]["run_tests"].nodes().size())
+      tests::handle_homeplug_mme::run_all(plugn);
     return nullptr;
 }
 

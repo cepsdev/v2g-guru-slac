@@ -20,6 +20,9 @@ sm{
                 on_initplugin{
                     evMMEPluginInitialized;
                 };
+                run_tests{
+                    all;
+                };
                 on_message{
                     if(CM_SLAC_PARM_REQ == mme_type){
                         on_mme_cm_slac_parm_eq{};

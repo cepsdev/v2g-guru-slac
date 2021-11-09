@@ -1,3 +1,5 @@
+#pragma once
+
 #include <stdlib.h>
 #include <ctype.h>
 #include "ceps_ast.hh" 
