@@ -1,8 +1,19 @@
 include_homeplug_mme_handler{};
+kind Event;
+Event evMMEPluginTestFinished;
+sm{
+    watchdog_mme_tests;
+    states{Initial;MMeTestsDone;};
+    Actions{
+        onMMeTestsDone{
+            print("**** MME Tests completed.***\n");
+        };
+    };
+    t{Initial;MMeTestsDone;evMMEPluginTestFinished;onMMeTestsDone;};
+};
 
 Simulation{
-    Event EXIT;
-    start_timer(10.0*s,EXIT);
     MMEPluginDebug = 1;
+    Start{watchdog_mme_tests;};
     run_include_homeplug_mme_handler{};
 };

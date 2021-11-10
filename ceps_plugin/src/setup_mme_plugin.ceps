@@ -20,6 +20,12 @@ sm{
                 on_initplugin{
                     evMMEPluginInitialized;
                 };
+                on_start_tests{
+                    evMMEPluginTestStarted;
+                };
+                on_end_tests{
+                    evMMEPluginTestFinished;
+                };
                 run_tests{
                     all;
                 };
