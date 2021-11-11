@@ -5,4 +5,4 @@ rm CMakeCache.txt -f
 rm Makefile -f
 rm lib* -f
 
-CEPSCORE=../../ceps/core MACHINES4CEPS=../../machines4ceps LOG4CEPS=../../log4ceps cmake ../ceps_plugin/ && make
+CEPSCORE=../../ceps/core MACHINES4CEPS=../../machines4ceps LOG4CEPS=../../log4ceps cmake ../ceps_plugin/ && make -j 12

@@ -29,21 +29,42 @@ SOFTWARE.
 #include <ostream>
 
 namespace mme{
-  uint16_t constexpr CM_SLAC_PARM_REQ = 1;
-  uint16_t constexpr CM_SLAC_PARM_CNF = 2;
-  uint16_t constexpr CM_START_ATTEN_CHAR_IND = 3;
-  uint16_t constexpr CM_MNBC_SOUND_IND = 4;
-  uint16_t constexpr CM_ATTEN_CHAR_IND = 5;
-  uint16_t constexpr CM_ATTEN_PROFILE_IND = 6;
-  uint16_t constexpr CM_ATTEN_CHAR_RSP = 7;
-  uint16_t constexpr CM_VALIDATE_REQ = 8;
-  uint16_t constexpr CM_VALIDATE_CNF = 9;
-  uint16_t constexpr CM_SLAC_MATCH_REQ = 10;
-  uint16_t constexpr CM_SLAC_MATCH_CNF = 11;
-  uint16_t constexpr CM_SET_KEY_REQ = 12;
-  uint16_t constexpr CM_SET_KEY_CNF = 13;
-  uint16_t constexpr CM_AMP_MAP_REQ = 14;
-  uint16_t constexpr CM_AMP_MAP_CNF = 15;
+      uint16_t constexpr REQ = 0;
+      uint16_t constexpr CNF = 1;
+      uint16_t constexpr IND = 2;
+      uint16_t constexpr RSP = 3;
+
+      inline auto is_request(uint16_t msg) { return (msg & 3) == REQ;}
+      inline auto is_confirmation(uint16_t msg) { return (msg & 3) == CNF;}
+      inline auto is_indication(uint16_t msg) { return (msg & 3) == IND;}
+      inline auto is_response(uint16_t msg) { return (msg & 3) == RSP;}
+
+
+      uint16_t constexpr CM_SLAC_PARM_BASE = 0x6064;
+      uint16_t constexpr CM_SET_KEY_BASE = 0x6008;
+      uint16_t constexpr CM_AMP_MAP_BASE = 0x601C;
+      uint16_t constexpr CM_START_ATTEN_CHAR_BASE = 0x6068;
+      uint16_t constexpr CM_ATTEN_CHAR_BASE = 0x606C;
+      uint16_t constexpr CM_MNBC_SOUND_BASE = 0x6074;
+      uint16_t constexpr CM_VALIDATE_BASE = 0x6078;
+      uint16_t constexpr CM_SLAC_MATCH_BASE = 0x607C;
+      uint16_t constexpr CM_ATTEN_PROFILE_BASE = 0x6084;
+
+      uint16_t constexpr CM_SLAC_PARM_REQ = CM_SLAC_PARM_BASE | REQ;
+      uint16_t constexpr CM_SLAC_PARM_CNF = CM_SLAC_PARM_BASE | CNF;
+      uint16_t constexpr CM_START_ATTEN_CHAR_IND = CM_START_ATTEN_CHAR_BASE | IND;
+      uint16_t constexpr CM_MNBC_SOUND_IND = CM_MNBC_SOUND_BASE | IND;
+      uint16_t constexpr CM_ATTEN_CHAR_IND = CM_ATTEN_CHAR_BASE | IND;
+      uint16_t constexpr CM_ATTEN_PROFILE_IND = CM_ATTEN_PROFILE_BASE | IND;
+      uint16_t constexpr CM_ATTEN_CHAR_RSP = CM_ATTEN_CHAR_BASE | RSP;
+      uint16_t constexpr CM_VALIDATE_REQ = CM_VALIDATE_BASE | REQ;
+      uint16_t constexpr CM_VALIDATE_CNF =  CM_VALIDATE_BASE | CNF;
+      uint16_t constexpr CM_SLAC_MATCH_REQ = CM_SLAC_MATCH_BASE | REQ;
+      uint16_t constexpr CM_SLAC_MATCH_CNF = CM_SLAC_MATCH_BASE | CNF;
+      uint16_t constexpr CM_SET_KEY_REQ = CM_SET_KEY_BASE | REQ;
+      uint16_t constexpr CM_SET_KEY_CNF =  CM_SET_KEY_BASE | CNF;
+      uint16_t constexpr CM_AMP_MAP_REQ = CM_AMP_MAP_BASE | REQ;
+      uint16_t constexpr CM_AMP_MAP_CNF = CM_AMP_MAP_BASE | CNF;
 }
 
 struct __attribute__((__packed__))  cm_slac_parm_req_t {
