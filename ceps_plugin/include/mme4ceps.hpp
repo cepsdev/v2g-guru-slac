@@ -38,4 +38,6 @@ class mme4ceps_plugin{
      ***/
     void set_associated_ceps_block(ceps::ast::node_t v);
     void handle_homeplug_mme(homeplug_mme_generic*, size_t mme_size);
+
+    void start_sctp_server(int port);
 };

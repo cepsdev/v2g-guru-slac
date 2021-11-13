@@ -41,6 +41,13 @@ static ceps::ast::node_t plugin_entrypoint_route_mme(ceps::ast::node_callparamet
     auto on_initplugin =  ceps::ast::Nodeset{t}["setup"]["on_initplugin"].nodes();
     eval_ceps_handler(on_initplugin);
   
+    //start_sctp_server
+    auto comm = ceps::ast::Nodeset{t}["setup"]["communication"];
+    if (comm["port"].nodes().size() == 1  && comm["as_server"].nodes().size() == 1 && comm["as_server"].as_int_noexcept() != 0){
+      auto port = comm["port"].as_int_noexcept();
+      if(port.has_value()) plugn.start_sctp_server(port.value());
+    }
+
     if (ceps::ast::Nodeset{t}["setup"]["run_tests"].nodes().size()){
       auto on_start_tests =  ceps::ast::Nodeset{t}["setup"]["on_start_tests"].nodes();
       auto on_end_tests =  ceps::ast::Nodeset{t}["setup"]["on_end_tests"].nodes();
@@ -48,6 +55,7 @@ static ceps::ast::node_t plugin_entrypoint_route_mme(ceps::ast::node_callparamet
       tests::handle_homeplug_mme::run_all(plugn);
       eval_ceps_handler(on_end_tests);
     }
+
     return nullptr;
 }
 
@@ -124,3 +132,11 @@ extern "C" void init_plugin(IUserdefined_function_registry* smc)
   plugin_master->reg_ceps_plugin("homeplug_mme_handler", plugin_entrypoint_route_mme);
   plugin_master->reg_ceps_plugin("send_homeplug_mme",plugin_send_mme);
 }
+
+
+
+
+
+
+
+

@@ -3,8 +3,6 @@ val MME_CNF = 1;
 val MME_IND = 2;
 val MME_RSP = 3;
 
-
-
 val CM_SLAC_PARM_BASE = 0x6064;
 val CM_SET_KEY_BASE = 0x6008;
 val CM_AMP_MAP_BASE = 0x601C;
