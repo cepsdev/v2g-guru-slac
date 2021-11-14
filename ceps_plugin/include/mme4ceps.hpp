@@ -36,6 +36,11 @@ class mme4ceps_plugin{
     void init();
     std::map<uint16_t, bool (mme4ceps_plugin::*) (homeplug_mme_generic*, size_t mme_size) > mme_msg_to_symbol_table_setup_routines;
   public:
+    struct result_t{
+      bool ok;
+      std::string msg;
+    };
+
     ceps::parser_env::Scope scope;    
     ceps::ast::node_t associated_ceps_block = nullptr;
     Ism4ceps_plugin_interface* ceps_engine = nullptr;
@@ -63,5 +68,5 @@ class mme4ceps_plugin{
     void set_associated_ceps_block(ceps::ast::node_t v);
     void handle_homeplug_mme(homeplug_mme_generic*, size_t mme_size);
 
-    void start_sctp_server(int port);
+    result_t start_sctp_server(std::string port);
 };

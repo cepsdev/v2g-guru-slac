@@ -36,8 +36,24 @@ sm{
     t{Initial;MMeTestsDone;evMMEPluginTestFinished;onMMeTestsDone;};
 };
 
+Event evMMEPluginError;
+sm{
+    watchdog_mme_plugin;
+    states{Initial;MMEPluginError;};
+    Actions{
+        onMMEError{
+            print("**** MME Plugin reported an error: '", argv(1),"'\n");
+        };
+    };
+    t{Initial;MMEPluginError;evMMEPluginError;onMMEError;};
+    t{MMEPluginError;MMEPluginError;evMMEPluginError;onMMEError;};
+};
+
+
 Simulation{
+    Event EXIT;
+    start_timer(30.0*s,EXIT);
     MMEPluginDebug = 1;
-    Start{watchdog_mme_tests;};
+    Start{watchdog_mme_tests;watchdog_mme_plugin;};
     run_include_homeplug_mme_handler{};
 };

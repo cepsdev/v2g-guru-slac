@@ -36,4 +36,4 @@ add_library(mm4ceps SHARED
            ../src/mme.cpp 
            src/tests/test_handle_homeplug_mme.cpp)
 
-target_link_libraries(mm4ceps cepscore)
+target_link_libraries(mm4ceps cepscore sctp)

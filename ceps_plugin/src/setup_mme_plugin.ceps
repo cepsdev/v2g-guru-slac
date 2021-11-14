@@ -39,7 +39,7 @@ sm{
         homeplug_mme_handler( 
             setup {
                 communication{
-                    port{2222;};
+                    port{"56798";};
                     as_server{1;};
                 };
                 on_initplugin{
@@ -50,6 +50,9 @@ sm{
                 };
                 on_end_tests{
                     evMMEPluginTestFinished;
+                };
+                on_error{
+                    evMMEPluginError;
                 };
                 run_tests{
                     //all;

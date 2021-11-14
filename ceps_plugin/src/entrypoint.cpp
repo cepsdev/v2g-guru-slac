@@ -67,9 +67,17 @@ static ceps::ast::node_t plugin_entrypoint_route_mme(ceps::ast::node_callparamet
   
     //start_sctp_server
     auto comm = ceps::ast::Nodeset{t}["setup"]["communication"];
+    auto err_ev_ns = ceps::ast::Nodeset{t}["setup"]["on_error"].nodes();
+    std::string err_ev;
+    if (err_ev_ns.size() == 1 && ceps::ast::is_a_symbol(err_ev_ns[0]))
+     err_ev = ceps::ast::name(ceps::ast::as_symbol_ref(err_ev_ns[0]));
     if (comm["port"].nodes().size() == 1  && comm["as_server"].nodes().size() == 1 && comm["as_server"].as_int_noexcept() != 0){
-      auto port = comm["port"].as_int_noexcept();
-      if(port.has_value()) plugn.start_sctp_server(port.value());
+      auto port = comm["port"].as_str();
+      auto result = plugn.start_sctp_server(port.size() == 0 ? "29056" : port);
+      if (!result.ok) {
+        if (err_ev.size()) 
+          plugn.ceps_engine->queue_internal_event(err_ev,{ceps::ast::mk_string(result.msg)});
+      }
     }
 
     if (ceps::ast::Nodeset{t}["setup"]["run_tests"].nodes().size()){
