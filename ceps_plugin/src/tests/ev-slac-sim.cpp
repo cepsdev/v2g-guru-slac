@@ -43,6 +43,22 @@ SOFTWARE.
 #include <netinet/sctp.h> 
 #include "mme.hpp"
 
+class EV {
+    int commfd = -1;
+    public:
+    EV () = default;
+    EV (int commfd):commfd{commfd} {
+
+
+    }
+    void operator()();
+};
+
+void EV::operator() (){
+
+}
+
+
 int main(int argc, char** argv){
     std::cout << "ev-slac-sim started." << std::endl;
     std::string host = "localhost";
@@ -87,6 +103,8 @@ int main(int argc, char** argv){
         std::cerr << "*** Error: host resolution  failed.\n";
         return 3;
     }
+
+    std::thread ev {EV{connectfd}};
 
     homeplug_mme_generic mme{0};
     mme.mmtype = mme::CM_SLAC_PARM_REQ;
