@@ -37,6 +37,7 @@ SOFTWARE.
 #include <netdb.h>
 #include <stdlib.h>
 #include <map>
+#include <cstring>
 #include <algorithm>
 #include <netinet/sctp.h> 
 #include "mme4ceps.hpp"
@@ -54,13 +55,14 @@ template<typename T>
 mme4ceps_plugin::result_t mme4ceps_plugin::start_sctp_server(std::string port){
     bool constexpr debug {false};
     addrinfo hints = {0}, *addrinfo_res = nullptr;
+    memset(&hints,0,sizeof(hints));
   
     auto sys_call_result = 0;
     if ((sys_call_result = getaddrinfo(nullptr, port.c_str(), &hints,&addrinfo_res)) != 0 )
         return result_t{false,std::string{gai_strerror(sys_call_result)}};
     
     hints.ai_flags = AI_PASSIVE | AI_NUMERICSERV;
-    hints.ai_family = AF_UNSPEC;
+    hints.ai_family = AF_INET;
     hints.ai_socktype = SOCK_SEQPACKET;
     hints.ai_protocol = IPPROTO_SCTP;
 
@@ -78,17 +80,17 @@ mme4ceps_plugin::result_t mme4ceps_plugin::start_sctp_server(std::string port){
             std::cout << "# it->ai_socktype = " << it->ai_socktype  << "\n";       
             std::cout << "# it->ai_flags = " << it->ai_flags  << "\n";
         }
-        listenfd = socket(it->ai_family, SOCK_SEQPACKET, IPPROTO_SCTP);
+        listenfd = socket(AF_INET, SOCK_SEQPACKET, IPPROTO_SCTP);
         if (listenfd < 0) continue;
         int on {1};
-        setsockopt(listenfd,SOL_SOCKET,SO_REUSEADDR,&on, sizeof(on));
+        //setsockopt(listenfd,SOL_SOCKET,SO_REUSEADDR,&on, sizeof(on));
         if (0 == bind(listenfd, it->ai_addr, it->ai_addrlen))
             break;
         close(listenfd);
         listenfd = -1;
     }//for
 
-    if (it == nullptr)
+    if (listenfd < 0)
         return {false,"Couldn't create a listening socket (socktype=SOCK_SEQPACKET, protocol=IPPROTO_SCTP)"};
     else if (debug){
         std::cout << "# Listening socket: " << listenfd << "\n";
@@ -101,23 +103,30 @@ mme4ceps_plugin::result_t mme4ceps_plugin::start_sctp_server(std::string port){
         std::cout << "# ai_socktype = " << it->ai_socktype  << "\n";       
         std::cout << "# ai_flags = " << it->ai_flags  << "\n";
     }
+
+    sctp_event_subscribe evnts {0};memset(&evnts,0,sizeof(evnts));
+    evnts.sctp_data_io_event = 1;
+    setsockopt(listenfd, IPPROTO_SCTP, SCTP_EVENTS, &evnts, sizeof(evnts));
+
     if (0 > listen(listenfd, 5))
      return result_t{false,"listen() failed."};
 
     
     std::thread reader_thread {
-        [=]()
+        [=,this]()
         {
             on_exit_cleanup on_exit{ [&] {if (addrinfo_res != nullptr) freeaddrinfo(addrinfo_res);}};
             socklen_t len = it->ai_addrlen;
             char readbuf[2048];
             for(;;){
-                sockaddr client;
+                sockaddr_in client {0};
+                len = sizeof(sockaddr_in);
                 sctp_sndrcvinfo sndrcvinfo{0};
+                memset(&client,0,sizeof(client));
+                memset(&sndrcvinfo,0,sizeof(sndrcvinfo));
                 int msg_flags{}; 
-                std::cout << "?" << std::endl;
-                auto rd_sz = sctp_recvmsg(listenfd,readbuf,sizeof(readbuf),&client,&len,&sndrcvinfo,&msg_flags);
-                std::cout << "!" << std::endl;
+                auto rd_sz = sctp_recvmsg(listenfd,readbuf,sizeof(readbuf),(sockaddr*)&client,&len,&sndrcvinfo,&msg_flags);
+                if (rd_sz > 0) this->handle_homeplug_mme( (homeplug_mme_generic*) readbuf,rd_sz);
             }
         }
     };

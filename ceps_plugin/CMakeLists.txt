@@ -37,3 +37,8 @@ add_library(mm4ceps SHARED
            src/tests/test_handle_homeplug_mme.cpp)
 
 target_link_libraries(mm4ceps cepscore sctp)
+
+add_executable( ev-slac-sim
+                src/tests/ev-slac-sim.cpp)
+
+target_link_libraries(ev-slac-sim sctp)

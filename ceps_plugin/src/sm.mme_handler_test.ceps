@@ -98,4 +98,19 @@ sm{
     t{wait_for_cm_amp_map_req;received_cm_amp_map_req;evCM_AMP_MAP_REQ;on_cm_amp_map_req;};
     t{wait_for_cm_amp_map_cnf;received_cm_amp_map_cnf;evCM_AMP_MAP_CNF;on_cm_amp_map_cnf;};
     t{wait_for_cm_atten_char_ind;received_cm_atten_char_ind;evCM_ATTEN_CHAR_IND;on_cm_atten_char_ind;};
+
+    t{received_cm_slac_parm_req;wait_for_cm_slac_parm_req;};  
+    t{received_cm_slac_parm_cnf;wait_for_cm_slac_parm_cnf;};
+    t{received_cm_start_atten_char_ind;wait_for_cm_start_atten_char_ind;};
+    t{received_cm_mnbc_sound_ind;wait_for_cm_mnbc_sound_ind;};
+    t{received_cm_atten_profile_ind;wait_for_cm_atten_profile_ind;};
+    t{received_cm_atten_char_rsp;wait_for_cm_atten_char_rsp;};
+    t{received_cm_validate_req;wait_for_cm_validate_req;};
+    t{received_cm_validate_cnf;wait_for_cm_validate_cnf;};
+    t{received_cm_slac_match_req;wait_for_cm_slac_match_req;};
+    t{received_cm_slac_match_cnf;wait_for_cm_slac_match_cnf;};
+    t{received_cm_set_key_req;wait_for_cm_set_key_req;};
+    t{received_cm_amp_map_req;wait_for_cm_amp_map_req;};
+    t{received_cm_amp_map_cnf;wait_for_cm_amp_map_cnf;};
+    t{received_cm_atten_char_ind;wait_for_cm_atten_char_ind;};
 };

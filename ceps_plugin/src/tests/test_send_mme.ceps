@@ -47,7 +47,7 @@ sm{
            Final;
         };
     on_enter{
-        //start_periodic_timer(0.0025*s,evSendMME);
+        start_periodic_timer(0.0025*s,evSendMME);
     };
     Actions {
         doSend_cm_slac_parm_req{
@@ -495,7 +495,7 @@ sm{
         };
         exit_test{
             Event EXIT;
-            EXIT;
+            //EXIT;
         };
     };
     t{Initial; send_cm_slac_parm_req; evSendMME; doSend_cm_slac_parm_req;};

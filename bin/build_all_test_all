@@ -6,6 +6,12 @@ rm Makefile -f
 rm lib* -f
 
 CEPSCORE=../../ceps/core MACHINES4CEPS=../../machines4ceps LOG4CEPS=../../log4ceps cmake ../ceps_plugin/ && make -j 12
+
+if [ $? -eq 0 ]; then
+ ./ev-slac-sim localhost 56800 &
 LD_LIBRARY_PATH=$(pwd):$LD_LIBRARY_PATH ceps ../ceps_plugin/src/mme_defs.ceps \
 ../ceps_plugin/src/mme_handlers.ceps ../ceps_plugin/src/setup_mme_plugin.ceps \
 ../ceps_plugin/src/sm.mme_handler_test.ceps ../ceps_plugin/src/tests/run_homeplug_mme_simulation.ceps ../ceps_plugin/src/tests/test_send_mme.ceps --pluginlibmm4ceps.so
+fi
+
+

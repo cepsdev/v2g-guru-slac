@@ -52,7 +52,7 @@ sm{
 
 Simulation{
     Event EXIT;
-    start_timer(30.0*s,EXIT);
+    start_timer(10.0*s,EXIT);
     MMEPluginDebug = 1;
     Start{watchdog_mme_tests;watchdog_mme_plugin;};
     run_include_homeplug_mme_handler{};
