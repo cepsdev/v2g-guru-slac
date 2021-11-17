@@ -111,6 +111,11 @@ mme4ceps_plugin::result_t mme4ceps_plugin::start_sctp_server(std::string port){
     if (0 > listen(listenfd, 5))
      return result_t{false,"listen() failed."};
 
+    {
+        std::lock_guard g{commfd_mtx};
+        commfd = listenfd;
+    }       
+
     
     std::thread reader_thread {
         [=,this]()
@@ -126,7 +131,15 @@ mme4ceps_plugin::result_t mme4ceps_plugin::start_sctp_server(std::string port){
                 memset(&sndrcvinfo,0,sizeof(sndrcvinfo));
                 int msg_flags{}; 
                 auto rd_sz = sctp_recvmsg(listenfd,readbuf,sizeof(readbuf),(sockaddr*)&client,&len,&sndrcvinfo,&msg_flags);
-                if (rd_sz > 0) this->handle_homeplug_mme( (homeplug_mme_generic*) readbuf,rd_sz);
+                if (rd_sz > 0)
+                {
+                    {
+                        std::lock_guard g{commfd_mtx};
+                        last_client = client;
+                        last_client_len = len;
+                    } 
+                    this->handle_homeplug_mme( (homeplug_mme_generic*) readbuf,rd_sz);
+                }
             }
         }
     };

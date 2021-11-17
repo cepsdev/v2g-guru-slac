@@ -38,6 +38,7 @@ SOFTWARE.
 #include <stdlib.h>
 #include <map>
 #include <algorithm>
+#include <netinet/sctp.h> 
 
 #include "mme4ceps.hpp"
 #include "mme2ceps_utils.hpp"
@@ -111,6 +112,7 @@ static ceps::ast::node_t plugin_send_mme(ceps::ast::node_callparameters_t params
     char mme_msg_buffer[sizeof(homeplug_mme_generic)*2] = {0};
     homeplug_mme_generic& mme_msg = *((homeplug_mme_generic*)mme_msg_buffer);
     auto payload_size = sizeof(homeplug_mme_generic) - sizeof(homeplug_mme_generic_header);
+    auto payload_bytes_written = 0;
 
     mme_msg.mmtype = mme_type.value();
     if(fmi.has_value()) mme_msg.fmi = fmi.value();
@@ -123,36 +125,60 @@ static ceps::ast::node_t plugin_send_mme(ceps::ast::node_callparameters_t params
     if(vlan_tag.has_value()) mme_msg.vlan_tag = vlan_tag.value();
 
     if (mme_msg.mmtype == mme::CM_SLAC_PARM_REQ)
-     write(payload.nodes(), mme_msg.mmdata.cm_slac_parm_req, payload_size);
+     payload_bytes_written = write(payload.nodes(), mme_msg.mmdata.cm_slac_parm_req, payload_size);
     else if (mme_msg.mmtype == mme::CM_SLAC_PARM_CNF)
-     write(payload.nodes(), mme_msg.mmdata.cm_slac_parm_cnf, payload_size);
+     payload_bytes_written = write(payload.nodes(), mme_msg.mmdata.cm_slac_parm_cnf, payload_size);
     else if (mme_msg.mmtype == mme::CM_START_ATTEN_CHAR_IND)
-     write(payload.nodes(), mme_msg.mmdata.cm_start_atten_char_ind, payload_size);
+     payload_bytes_written = write(payload.nodes(), mme_msg.mmdata.cm_start_atten_char_ind, payload_size);
     else if (mme_msg.mmtype == mme::CM_MNBC_SOUND_IND)
-     write(payload.nodes(), mme_msg.mmdata.cm_mnbc_sound_ind, payload_size);
+     payload_bytes_written = write(payload.nodes(), mme_msg.mmdata.cm_mnbc_sound_ind, payload_size);
     else if (mme_msg.mmtype == mme::CM_ATTEN_CHAR_IND)
-     write(payload.nodes(), mme_msg.mmdata.cm_atten_char_ind, payload_size);
+     payload_bytes_written = write(payload.nodes(), mme_msg.mmdata.cm_atten_char_ind, payload_size);
     else if (mme_msg.mmtype == mme::CM_ATTEN_CHAR_RSP)
-     write(payload.nodes(), mme_msg.mmdata.cm_atten_char_rsp, payload_size);
+     payload_bytes_written = write(payload.nodes(), mme_msg.mmdata.cm_atten_char_rsp, payload_size);
     else if (mme_msg.mmtype == mme::CM_ATTEN_PROFILE_IND)
-     write(payload.nodes(), mme_msg.mmdata.cm_atten_profile_ind, payload_size);
+     payload_bytes_written = write(payload.nodes(), mme_msg.mmdata.cm_atten_profile_ind, payload_size);
     else if (mme_msg.mmtype == mme::CM_VALIDATE_REQ)
-     write(payload.nodes(), mme_msg.mmdata.cm_validate_req, payload_size);
+     payload_bytes_written = write(payload.nodes(), mme_msg.mmdata.cm_validate_req, payload_size);
     else if (mme_msg.mmtype == mme::CM_VALIDATE_CNF)
-     write(payload.nodes(), mme_msg.mmdata.cm_validate_cnf, payload_size);
+     payload_bytes_written = write(payload.nodes(), mme_msg.mmdata.cm_validate_cnf, payload_size);
     else if (mme_msg.mmtype == mme::CM_SLAC_MATCH_REQ)
-     write(payload.nodes(), mme_msg.mmdata.cm_slac_match_req, payload_size);
+     payload_bytes_written = write(payload.nodes(), mme_msg.mmdata.cm_slac_match_req, payload_size);
     else if (mme_msg.mmtype == mme::CM_SLAC_MATCH_CNF)
-     write(payload.nodes(), mme_msg.mmdata.cm_slac_match_cnf, payload_size);
+     payload_bytes_written = write(payload.nodes(), mme_msg.mmdata.cm_slac_match_cnf, payload_size);
     else if (mme_msg.mmtype == mme::CM_SET_KEY_REQ)
-     write(payload.nodes(), mme_msg.mmdata.cm_set_key_req, payload_size);
+     payload_bytes_written = write(payload.nodes(), mme_msg.mmdata.cm_set_key_req, payload_size);
     else if (mme_msg.mmtype == mme::CM_AMP_MAP_REQ)
-     write(payload.nodes(), mme_msg.mmdata.cm_amp_map_req, payload_size);
+     payload_bytes_written = write(payload.nodes(), mme_msg.mmdata.cm_amp_map_req, payload_size);
     else if (mme_msg.mmtype == mme::CM_AMP_MAP_CNF)
-     write(payload.nodes(), mme_msg.mmdata.cm_amp_map_cnf, payload_size);
+     payload_bytes_written = write(payload.nodes(), mme_msg.mmdata.cm_amp_map_cnf, payload_size);
     
     if (print_debug) 
       std::cout << mme_msg << std::endl;
+
+    int commfd = -1;
+
+    sockaddr_in last_client = {0};
+    socklen_t last_client_len{};
+    {
+      std::lock_guard g{plugn.commfd_mtx};
+      commfd = plugn.commfd;
+      last_client = plugn.last_client;
+      last_client_len = plugn.last_client_len;
+    }
+
+    if (commfd < 0) {
+      return nullptr;
+    }
+    sctp_sndrcvinfo sinfo = {0};
+    uint32_t flags{0};
+
+    auto r = sctp_sendmsg(commfd, mme_msg_buffer, std::max((size_t)60 , (size_t)payload_bytes_written + sizeof(homeplug_mme_generic_header)),(sockaddr*) &last_client,last_client_len,0 , flags, 0,0,0 );
+    auto err = errno;
+
+    if (r < 0) std::cout << "*+***+++********* " << commfd << "   " << strerror(err) << std::endl;
+
+
 
     return nullptr;
 }

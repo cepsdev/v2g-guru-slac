@@ -55,7 +55,7 @@ sm{
                     evMMEPluginError;
                 };
                 run_tests{
-                    all;
+                    //all;
                 };
                 on_message{
                     if(CM_SLAC_PARM_REQ == mme_type){

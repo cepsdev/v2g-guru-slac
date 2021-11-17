@@ -47,7 +47,7 @@ sm{
            Final;
         };
     on_enter{
-        start_periodic_timer(0.0025*s,evSendMME);
+        start_periodic_timer(8.0*s,evSendMME);
     };
     Actions {
         doSend_cm_slac_parm_req{

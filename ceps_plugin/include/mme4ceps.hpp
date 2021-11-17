@@ -45,6 +45,10 @@ class mme4ceps_plugin{
     ceps::ast::node_t associated_ceps_block = nullptr;
     Ism4ceps_plugin_interface* ceps_engine = nullptr;
     Ism4ceps_plugin_interface* plugin_master = nullptr;
+    int commfd = -1;
+    sockaddr_in last_client = {0};
+    socklen_t last_client_len = 0;
+    std::mutex commfd_mtx;
 
     bool mme_msg_cm_slac_param_req_setup_symtbl(homeplug_mme_generic*, size_t mme_size);
     bool mme_msg_cm_slac_parm_cnf_setup_symtbl(homeplug_mme_generic*, size_t mme_size);

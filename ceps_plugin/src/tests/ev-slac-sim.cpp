@@ -45,22 +45,83 @@ SOFTWARE.
 
 class EV {
     int commfd = -1;
+    addrinfo * addrinfo_start; 
+    addrinfo * addrinfo_used;
     public:
     EV () = default;
-    EV (int commfd):commfd{commfd} {
-
+    EV (int commfd,addrinfo * addrinfo_start, addrinfo * addrinfo_used):commfd{commfd},addrinfo_start{addrinfo_start},addrinfo_used{addrinfo_used} {
 
     }
     void operator()();
+    void msg_reader();
 };
 
 void EV::operator() (){
+            sleep(5);
+            std::thread reader{&EV::msg_reader,this};
 
+            homeplug_mme_generic mme{0};
+            mme.mmtype = mme::CM_SLAC_PARM_REQ;
+            mme.mmdata.cm_slac_parm_req.run_id[0] = 100;
+            mme.mmdata.cm_slac_parm_req.run_id[1] = 200;
+            mme.mmdata.cm_slac_parm_req.run_id[2] = 201;
+            
+
+            auto r = sctp_sendmsg(commfd, &mme,std::max( (size_t)60,sizeof(homeplug_mme_generic_header)+sizeof(cm_slac_parm_req_t)),addrinfo_used->ai_addr,addrinfo_used->ai_addrlen,0,0,0,0,0 ) ;
+            sleep(10);
+            mme.mmdata.cm_slac_parm_req.run_id[0] = 101;
+            mme.mmdata.cm_slac_parm_req.run_id[1] = 202;
+            mme.mmdata.cm_slac_parm_req.run_id[2] = 203;
+
+            r = sctp_sendmsg(commfd, &mme,std::max( (size_t)60,sizeof(homeplug_mme_generic_header)+sizeof(cm_slac_parm_req_t)),addrinfo_used->ai_addr,addrinfo_used->ai_addrlen,0,0,0,0,0 ) ;
+
+            if (r <= 0){
+                auto err = errno;
+                std::cerr << "*** Error:sctp_sendmsg  failed: "<< strerror(err) <<"\n";
+            }
+
+            sleep(10);
+            mme.mmdata.cm_slac_parm_req.run_id[0] = 104;
+            mme.mmdata.cm_slac_parm_req.run_id[1] = 205;
+            mme.mmdata.cm_slac_parm_req.run_id[2] = 206;
+
+            r = sctp_sendmsg(commfd, &mme,std::max( (size_t)60,sizeof(homeplug_mme_generic_header)+sizeof(cm_slac_parm_req_t)),addrinfo_used->ai_addr,addrinfo_used->ai_addrlen,0,0,0,0,0 ) ;
+
+            if (r <= 0){
+                auto err = errno;
+                std::cerr << "*** Error:sctp_sendmsg  failed: "<< strerror(err) <<"\n";
+            }
+            
+            sleep(10);
+            mme.mmdata.cm_slac_parm_req.run_id[0] = 107;
+            mme.mmdata.cm_slac_parm_req.run_id[1] = 208;
+            mme.mmdata.cm_slac_parm_req.run_id[2] = 209;
+
+            r = sctp_sendmsg(commfd, &mme,std::max( (size_t)60,sizeof(homeplug_mme_generic_header)+sizeof(cm_slac_parm_req_t)),addrinfo_used->ai_addr,addrinfo_used->ai_addrlen,0,0,0,0,0 ) ;
+
+            if (r <= 0){
+                auto err = errno;
+                std::cerr << "*** Error:sctp_sendmsg  failed: "<< strerror(err) <<"\n";
+            }
+            reader.join();    
 }
 
+void EV::msg_reader(){
+    for(;;){
+        sockaddr_in client {0};
+        socklen_t len = sizeof(sockaddr_in);
+        sctp_sndrcvinfo sndrcvinfo{0};
+        memset(&client,0,sizeof(client));
+        memset(&sndrcvinfo,0,sizeof(sndrcvinfo));
+        int msg_flags{};
+        char readbuf[2048] = {0}; 
+        std::cout << "##### sctp_recvmsgsctp_recvmsgsctp_recvmsgsctp_recvmsgsctp_recvmsg "  << std::endl;
+        auto rd_sz = sctp_recvmsg(commfd,readbuf,sizeof(readbuf),(sockaddr*)&client,&len,&sndrcvinfo,&msg_flags);
+        std::cout << "##### READ " << rd_sz <<" bytes" << std::endl;
+    }
+}
 
 int main(int argc, char** argv){
-    std::cout << "ev-slac-sim started." << std::endl;
     std::string host = "localhost";
     std::string port = "56800";
     if (argc > 1) host = argv[1];
@@ -104,38 +165,13 @@ int main(int argc, char** argv){
         return 3;
     }
 
-    std::thread ev {EV{connectfd}};
-
-    homeplug_mme_generic mme{0};
-    mme.mmtype = mme::CM_SLAC_PARM_REQ;
-    mme.mmdata.cm_slac_parm_req.run_id[0] = 100;
-    mme.mmdata.cm_slac_parm_req.run_id[1] = 200;
-    mme.mmdata.cm_slac_parm_req.run_id[2] = 201;
-    
     sctp_event_subscribe evnts {0};memset(&evnts,0,sizeof(evnts));
     evnts.sctp_data_io_event = 1;
     setsockopt(connectfd, IPPROTO_SCTP, SCTP_EVENTS, &evnts, sizeof(evnts));
 
-    sleep(5);
-    std::cout <<"[ev-clac-sim] Send CM_SLAC_PARM_REQ." << std::endl; 
-    auto r = sctp_sendmsg(connectfd, &mme,std::max( (size_t)60,sizeof(homeplug_mme_generic_header)+sizeof(cm_slac_parm_req_t)),res->ai_addr,res->ai_addrlen,0,0,0,0,0 ) ;
-    std::cout <<"[ev-clac-sim] r=" << r << std::endl; 
-    sleep(1);
-    mme.mmdata.cm_slac_parm_req.run_id[0] = 101;
-    mme.mmdata.cm_slac_parm_req.run_id[1] = 202;
-    mme.mmdata.cm_slac_parm_req.run_id[2] = 203;
 
-    std::cout <<"[ev-clac-sim] Send CM_SLAC_PARM_REQ." << std::endl; 
-    r = sctp_sendmsg(connectfd, &mme,std::max( (size_t)60,sizeof(homeplug_mme_generic_header)+sizeof(cm_slac_parm_req_t)),res->ai_addr,res->ai_addrlen,0,0,0,0,0 ) ;
-    std::cout <<"[ev-clac-sim] r=" << r << std::endl; 
-
-    if (r <= 0){
-        auto err = errno;
-        
-        std::cerr << "*** Error:sctp_sendmsg  failed: "<< strerror(err) <<"\n";
-        return 3;
-    }
-
-    std::cout << "ev-slac-sim terminated." << std::endl;
+    std::thread ev {EV{connectfd,addrinfo_res,res}};
+    ev.join();
+    
     return 0;
 }

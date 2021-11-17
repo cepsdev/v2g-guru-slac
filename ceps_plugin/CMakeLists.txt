@@ -25,7 +25,7 @@ include_directories(include/tests)
 
 link_directories($ENV{CEPSCORE}/bin)
 
-add_library(mm4ceps SHARED 
+add_library(slac4ceps SHARED 
            src/entrypoint.cpp 
            src/mme2ceps.cpp 
            src/ceps2mme.cpp 
@@ -36,9 +36,9 @@ add_library(mm4ceps SHARED
            ../src/mme.cpp 
            src/tests/test_handle_homeplug_mme.cpp)
 
-target_link_libraries(mm4ceps cepscore sctp)
+target_link_libraries(slac4ceps cepscore sctp)
 
-add_executable( ev-slac-sim
+add_executable( slac-sim-ev
                 src/tests/ev-slac-sim.cpp)
 
-target_link_libraries(ev-slac-sim sctp)
+target_link_libraries(slac-sim-ev sctp pthread)
