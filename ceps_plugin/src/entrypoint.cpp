@@ -72,13 +72,25 @@ static ceps::ast::node_t plugin_entrypoint_route_mme(ceps::ast::node_callparamet
     std::string err_ev;
     if (err_ev_ns.size() == 1 && ceps::ast::is_a_symbol(err_ev_ns[0]))
      err_ev = ceps::ast::name(ceps::ast::as_symbol_ref(err_ev_ns[0]));
-    if (comm["port"].nodes().size() == 1  && comm["as_server"].nodes().size() == 1 && comm["as_server"].as_int_noexcept() != 0){
-      auto port = comm["port"].as_str();
-      auto result = plugn.start_sctp_server(port.size() == 0 ? "29056" : port);
+    if (comm["as_server"].nodes().size() == 1 && comm["as_server"].as_int_noexcept() != 0){
+      std::string port = "56800";
+      if(comm["port"].nodes().size() == 1) 
+        port = comm["port"].as_str();
+      auto result = plugn.start_sctp_server(port.size() == 0 ? "56800" : port);
       if (!result.ok) {
         if (err_ev.size()) 
           plugn.ceps_engine->queue_internal_event(err_ev,{ceps::ast::mk_string(result.msg)});
       }
+    } else if (comm["as_server"].nodes().size() == 1 && comm["as_server"].as_int_noexcept() == 0){
+      std::string port = "56800";
+      if(comm["port"].nodes().size() == 1) 
+        port = comm["port"].as_str().size() ? comm["port"].as_str() : port ;
+      std::string host = "localhost";
+      if(comm["host"].nodes().size() == 1) 
+        host = comm["host"].as_str();
+      
+
+
     }
 
     if (ceps::ast::Nodeset{t}["setup"]["run_tests"].nodes().size()){
@@ -175,11 +187,6 @@ static ceps::ast::node_t plugin_send_mme(ceps::ast::node_callparameters_t params
 
     auto r = sctp_sendmsg(commfd, mme_msg_buffer, std::max((size_t)60 , (size_t)payload_bytes_written + sizeof(homeplug_mme_generic_header)),(sockaddr*) &last_client,last_client_len,0 , flags, 0,0,0 );
     auto err = errno;
-
-    if (r < 0) std::cout << "*+***+++********* " << commfd << "   " << strerror(err) << std::endl;
-
-
-
     return nullptr;
 }
 

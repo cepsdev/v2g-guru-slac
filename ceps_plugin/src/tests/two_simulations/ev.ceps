@@ -1,0 +1,131 @@
+/*
+MIT License
+
+Copyright (c) 2021 Tomas Prerovsky
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+*/
+
+
+kind Event;
+kind Guard;
+Guard MMEPluginDebug;
+Event evMMEPluginInitialized;
+
+MMEPluginDebug = 1;
+
+macro include_homeplug_mme_handler{
+
+sm{
+    map_mme_to_events;
+    states{Initial;};
+    on_enter{
+        homeplug_mme_handler( 
+            setup {
+                communication{
+                    port{"56800";};
+                    host{"localhost"};
+                    as_server{0;};
+                };
+                on_initplugin{
+                    evMMEPluginInitialized;
+                };
+                on_start_tests{
+                    evMMEPluginTestStarted;
+                };
+                on_end_tests{
+                    evMMEPluginTestFinished;
+                };
+                on_error{
+                    evMMEPluginError;
+                };
+                run_tests{
+                    //all;
+                };
+                on_message{
+                    if(CM_SLAC_PARM_REQ == mme_type){
+                        on_mme_cm_slac_parm_eq{};
+                    } 
+                    else if(CM_SLAC_PARM_CNF == mme_type){
+                        on_mme_cm_slac_parm_cnf{};
+                    }
+                    else if(CM_START_ATTEN_CHAR_IND == mme_type){
+                        on_mme_cm_start_atten_char_ind{};
+                    }
+                    else if(CM_MNBC_SOUND_IND == mme_type){
+                        on_mme_cm_mnbc_sound_ind{};
+                    }else if(CM_ATTEN_PROFILE_IND == mme_type)
+                    {
+                        on_mme_cm_atten_profile_ind{};
+                    }else if(CM_ATTEN_CHAR_RSP == mme_type)
+                    {
+                        on_mme_cm_atten_char_rsp{};
+                    }else if(CM_VALIDATE_REQ == mme_type)
+                    {
+                        on_mme_cm_validate_req{};
+                    }else if(CM_VALIDATE_CNF == mme_type)
+                    {
+                        on_mme_cm_validate_cnf{};
+                    }else if(CM_SLAC_MATCH_REQ == mme_type)
+                    {
+                        on_mme_cm_slac_match_req{};
+                    }else if(CM_SLAC_MATCH_CNF == mme_type)
+                    {
+                        on_mme_cm_slac_match_cnf{};
+                    }else if(CM_SET_KEY_REQ == mme_type)
+                    {
+                        on_mme_cm_set_key_req{};
+                    }else if(CM_SET_KEY_CNF == mme_type)
+                    {
+                        on_mme_cm_set_key_cnf{};
+                    }else if(CM_AMP_MAP_REQ == mme_type)
+                    {
+                        on_mme_cm_amp_map_req{};                    
+                    }else if(CM_AMP_MAP_CNF == mme_type)
+                    {
+                        on_mme_cm_amp_map_cnf{};
+                    } else if ( CM_ATTEN_CHAR_IND == mme_type) {
+                        on_mme_cm_atten_char_ind{};
+                    }       
+                };            
+            } 
+        );
+    };
+
+    Actions{
+        onMMEPluginInitialized{
+            print("MME Plugin ready\n");
+        };
+    };
+
+    t{Initial;Initial;evMMEPluginInitialized;MMEPluginDebug;onMMEPluginInitialized;};
+};
+};
+
+macro run_include_homeplug_mme_handler{
+    Start{map_mme_to_events;};    
+};
+
+include_homeplug_mme_handler{};
+
+Simulation{
+    Event EXIT;
+    start_timer(60.0*s,EXIT);
+    run_include_homeplug_mme_handler{};
+};
