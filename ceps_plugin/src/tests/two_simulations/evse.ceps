@@ -28,7 +28,7 @@ kind Guard;
 Guard MMEPluginDebug;
 Event evMMEPluginInitialized;
 
-MMEPluginDebug = 0;
+MMEPluginDebug = 1;
 
 macro include_homeplug_mme_handler{
 
@@ -119,4 +119,12 @@ sm{
 
 macro run_include_homeplug_mme_handler{
     Start{map_mme_to_events;};    
+};
+
+include_homeplug_mme_handler{};
+
+Simulation{
+    Event EXIT;
+    start_timer(60.0*s,EXIT);
+    run_include_homeplug_mme_handler{};
 };

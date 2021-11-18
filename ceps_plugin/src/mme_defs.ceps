@@ -53,3 +53,5 @@ val CM_SET_KEY_REQ = CM_SET_KEY_BASE + MME_REQ;
 val CM_SET_KEY_CNF =  CM_SET_KEY_BASE + MME_CNF;
 val CM_AMP_MAP_REQ = CM_AMP_MAP_BASE + MME_REQ;
 val CM_AMP_MAP_CNF = CM_AMP_MAP_BASE + MME_CNF;
+
+val sm_mme_handler_test_debug = 0;

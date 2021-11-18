@@ -52,20 +52,23 @@ sm{
     };
 
     Actions{
-        for (e: on_cm_slac_parm_req, on_cm_slac_parm_cnf, on_cm_start_atten_char_ind, on_cm_mnbc_sound_ind, on_cm_atten_profile_ind,
+
+         for (e: on_cm_slac_parm_req, on_cm_slac_parm_cnf, on_cm_start_atten_char_ind, on_cm_mnbc_sound_ind, on_cm_atten_profile_ind,
                  on_cm_atten_char_rsp, on_cm_validate_req, on_cm_validate_cnf, on_cm_slac_match_req,on_cm_slac_match_cnf,on_cm_set_key_req,
                  on_cm_amp_map_req, on_cm_amp_map_cnf, on_cm_atten_char_ind
             ){
              e{
-                print ("**** Received event >>",argv(0),"<< with argument = >>",argv(1),"<<\n");
+                if (sm_mme_handler_test_debug) print ("**** Received event >>",argv(0),"<< with argument = >>",argv(1),"<<\n");
              };
         }
 
         on_cm_slac_parm_req2{
                 parameter = argv(1);
-                print ("#### Details for >>",argv(0),"<< application_type = >>",parameter.application_type.content(),"<<\n");
-                print ("#### Details for >>",argv(0),"<< security_type = >>",parameter.security_type.content(),"<<\n");
-                print ("#### Details for >>",argv(0),"<< run_id = >>",parameter.run_id.content(),"<<\n");
+                if (sm_mme_handler_test_debug){
+                    print ("#### Details for >>",argv(0),"<< application_type = >>",parameter.application_type.content(),"<<\n");
+                    print ("#### Details for >>",argv(0),"<< security_type = >>",parameter.security_type.content(),"<<\n");
+                    print ("#### Details for >>",argv(0),"<< run_id = >>",parameter.run_id.content(),"<<\n");
+                }
         };
     };
     
