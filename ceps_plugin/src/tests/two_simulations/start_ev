@@ -1,0 +1,5 @@
+#!/bin/bash
+
+
+LD_LIBRARY_PATH=../../../../bin:$LD_LIBRARY_PATH ceps ../../../../ceps_plugin/src/mme_defs.ceps \
+ ../../../../ceps_plugin/src/mme_handlers.ceps ev.ceps --pluginlibslac4ceps.so

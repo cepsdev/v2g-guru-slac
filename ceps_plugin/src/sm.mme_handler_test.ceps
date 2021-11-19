@@ -35,57 +35,41 @@ sm{
     };
 
     states{ Initial;
-            wait_for_cm_slac_parm_req; received_cm_slac_parm_req;
-            wait_for_cm_slac_parm_cnf; received_cm_slac_parm_cnf; 
-            wait_for_cm_start_atten_char_ind; received_cm_start_atten_char_ind;
-            wait_for_cm_mnbc_sound_ind; received_cm_mnbc_sound_ind;
-            wait_for_cm_atten_profile_ind;received_cm_atten_profile_ind;
-            wait_for_cm_atten_char_rsp;received_cm_atten_char_rsp;
-            wait_for_cm_validate_req;received_cm_validate_req;
-            wait_for_cm_validate_cnf;received_cm_validate_cnf;
-            wait_for_cm_slac_match_req;received_cm_slac_match_req;    
-            wait_for_cm_slac_match_cnf;received_cm_slac_match_cnf;
-            wait_for_cm_set_key_req;received_cm_set_key_req;
-            wait_for_cm_amp_map_req;received_cm_amp_map_req;
-            wait_for_cm_amp_map_cnf;received_cm_amp_map_cnf;
-            wait_for_cm_atten_char_ind;received_cm_atten_char_ind;
+        for (e: root.mme.messages.content() ) {
+            as_identifier("wait_for_"+text(e));
+            as_identifier("received_"+text(e));
+        }
     };
 
     Actions{
 
-         for (e: on_cm_slac_parm_req, on_cm_slac_parm_cnf, on_cm_start_atten_char_ind, on_cm_mnbc_sound_ind, on_cm_atten_profile_ind,
-                 on_cm_atten_char_rsp, on_cm_validate_req, on_cm_validate_cnf, on_cm_slac_match_req,on_cm_slac_match_cnf,on_cm_set_key_req,
-                 on_cm_amp_map_req, on_cm_amp_map_cnf, on_cm_atten_char_ind
-            ){
-             e{
-                if (sm_mme_handler_test_debug) print ("**** Received event >>",argv(0),"<< with argument = >>",argv(1),"<<\n");
-             };
+        for (e: root.mme.handlers.content() ) {
+            if (sm_mme_handler_test_debug){
+                e{ print ("\t [mme_handler_test] event = >>",argv(0),"<< payload = >>",argv(1),"<<\n");  };
+            } else {
+                e{   };
+            }
         }
+        if (sm_mme_handler_test_debug){
 
-        on_cm_slac_parm_req2{
-                parameter = argv(1);
-                if (sm_mme_handler_test_debug){
-                    print ("#### Details for >>",argv(0),"<< application_type = >>",parameter.application_type.content(),"<<\n");
-                    print ("#### Details for >>",argv(0),"<< security_type = >>",parameter.security_type.content(),"<<\n");
-                    print ("#### Details for >>",argv(0),"<< run_id = >>",parameter.run_id.content(),"<<\n");
-                }
-        };
+            on_cm_slac_parm_req2{
+                        parameter = argv(1);
+                        print ("\t [mme_handler_test] Details for >>",argv(0),"<< application_type = >>",parameter.application_type.content(),"<<\n");
+                        print ("\t [mme_handler_test] Details for >>",argv(0),"<< security_type = >>",parameter.security_type.content(),"<<\n");
+                        print ("\t [mme_handler_test] Details for >>",argv(0),"<< run_id = >>",parameter.run_id.content(),"<<\n");
+            };
+        } else {
+            on_cm_slac_parm_req2{};
+        }
     };
-    
-    t{Initial;wait_for_cm_slac_parm_req;};
-    t{Initial;wait_for_cm_slac_parm_cnf;};
-    t{Initial;wait_for_cm_start_atten_char_ind;};
-    t{Initial;wait_for_cm_mnbc_sound_ind;};
-    t{Initial;wait_for_cm_atten_profile_ind;};
-    t{Initial;wait_for_cm_atten_char_rsp;};
-    t{Initial;wait_for_cm_validate_req;};
-    t{Initial;wait_for_cm_validate_cnf;};
-    t{Initial;wait_for_cm_slac_match_req;};    
-    t{Initial;wait_for_cm_slac_match_cnf;};
-    t{Initial;wait_for_cm_set_key_req;};
-    t{Initial;wait_for_cm_amp_map_req;};
-    t{Initial;wait_for_cm_amp_map_cnf;};
-    t{Initial;wait_for_cm_atten_char_ind;};
+
+    for (e: root.mme.messages.content() ) {
+        t{ Initial;as_identifier("wait_for_"+text(e));};
+    }
+
+    for (e: root.mme.messages.content() ) {
+        t{ Initial;as_identifier("wait_for_"+text(e));};
+    }
 
     t{wait_for_cm_slac_parm_req;received_cm_slac_parm_req;evCM_SLAC_PARM_REQ;on_cm_slac_parm_req;on_cm_slac_parm_req2;};  
     t{wait_for_cm_slac_parm_cnf;received_cm_slac_parm_cnf;evCM_SLAC_PARM_CNF;on_cm_atten_char_ind;};
@@ -102,18 +86,7 @@ sm{
     t{wait_for_cm_amp_map_cnf;received_cm_amp_map_cnf;evCM_AMP_MAP_CNF;on_cm_amp_map_cnf;};
     t{wait_for_cm_atten_char_ind;received_cm_atten_char_ind;evCM_ATTEN_CHAR_IND;on_cm_atten_char_ind;};
 
-    t{received_cm_slac_parm_req;wait_for_cm_slac_parm_req;};  
-    t{received_cm_slac_parm_cnf;wait_for_cm_slac_parm_cnf;};
-    t{received_cm_start_atten_char_ind;wait_for_cm_start_atten_char_ind;};
-    t{received_cm_mnbc_sound_ind;wait_for_cm_mnbc_sound_ind;};
-    t{received_cm_atten_profile_ind;wait_for_cm_atten_profile_ind;};
-    t{received_cm_atten_char_rsp;wait_for_cm_atten_char_rsp;};
-    t{received_cm_validate_req;wait_for_cm_validate_req;};
-    t{received_cm_validate_cnf;wait_for_cm_validate_cnf;};
-    t{received_cm_slac_match_req;wait_for_cm_slac_match_req;};
-    t{received_cm_slac_match_cnf;wait_for_cm_slac_match_cnf;};
-    t{received_cm_set_key_req;wait_for_cm_set_key_req;};
-    t{received_cm_amp_map_req;wait_for_cm_amp_map_req;};
-    t{received_cm_amp_map_cnf;wait_for_cm_amp_map_cnf;};
-    t{received_cm_atten_char_ind;wait_for_cm_atten_char_ind;};
+    for (e: root.mme.messages.content() ) {
+        t{ as_identifier("received_"+text(e)); as_identifier("wait_for_"+text(e));};
+    }
 };

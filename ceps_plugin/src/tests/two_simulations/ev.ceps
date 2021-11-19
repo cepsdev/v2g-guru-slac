@@ -32,7 +32,7 @@ Event evMMEPluginInitialized;
 MMEPluginDebug = 1;
 
 
-val TP_EV_SLAC_init = 0.01*s;
+val TP_EV_SLAC_init = 1.0*s;
 
 
 macro include_homeplug_mme_handler{
@@ -129,14 +129,6 @@ macro run_include_homeplug_mme_handler{
 
 include_homeplug_mme_handler{};
 
-Event evMatchingProcessStartTrigger;
-Event evTP_EV_SLAC_init_timeout;
-
-Guard gRetryAfterWaitForCMSlacParmCnfsFailed;
-Systemstate RetriesAfterWaitForCMSlacParmCnfsFailed;
-RetriesAfterWaitForCMSlacParmCnfsFailed = 1025;
-gRetryAfterWaitForCMSlacParmCnfsFailed = RetriesAfterWaitForCMSlacParmCnfsFailed > 0;
-
 Systemstate curRunId0,curRunId1,curRunId2,curRunId3,curRunId4,curRunId5,curRunId6,curRunId7;
 curRunId0 = 0;
 curRunId1 = 0;
@@ -147,28 +139,57 @@ curRunId5 = 0;
 curRunId6 = 0;
 curRunId7 = 0;
 
+macro next_run_id{
+    curRunId0 = curRunId0 + 1;
+    if (curRunId0 > 255) {
+        curRunId0 = 0;
+        curRunId1 = curRunId1 + 1;
+        if (curRunId1 > 255) {
+            curRunId1 = 0;
+            curRunId2 = curRunId2 + 1;
+            if (curRunId2 > 255) {
+                curRunId2 = 0;
+                curRunId3 = curRunId3 + 1;
+                if (curRunId3 > 255) {
+                    curRunId3 = 0;
+                    curRunId4 = curRunId4 + 1;
+                    if (curRunId4 > 255) {
+                        curRunId4 = 0;
+                        curRunId5 = curRunId5 + 1;
+                        if (curRunId5 > 255) {
+                            curRunId5 = 0;
+                            curRunId6 = curRunId6 + 1;
+                            if (curRunId6 > 255) {
+                                curRunId6 = 0;
+                                curRunId7 = curRunId7 + 1;
+                                if (curRunId7 > 255){
+                                    curRunId0=0;curRunId1=0;curRunId2=0;curRunId3=0;curRunId4=0;curRunId5=0;curRunId6=0;curRunId7=0;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+};
+
+
+
+Event evMatchingProcessStartTrigger;
+Event evTP_EV_SLAC_init_timeout;
+
+Guard gRetryAfterWaitForCMSlacParmCnfsFailed;
+Systemstate RetriesAfterWaitForCMSlacParmCnfsFailed;
+RetriesAfterWaitForCMSlacParmCnfsFailed = 1025;
+gRetryAfterWaitForCMSlacParmCnfsFailed = RetriesAfterWaitForCMSlacParmCnfsFailed > 0;
 
 sm{
     EV;
     states{Initial;WaitForMatchingProcessStartTrigger;SendCMSlacParmReq;WaitForCMSlacParmCnfs; WaitForCMSlacParmCnfsFailed; Final; };
     Actions{
         doSendCM_SLAC_PARM_REQ{
-            curRunId0 = curRunId0 + 1;
-            print("???????????????????????????\n");
-            if (0 < curRunId0) {
-                print("#################################\n");
-                curRunId0 = 0;
-                curRunId1 = curRunId1 + 1;
-                if (curRunId1 >= 256) {
-                    curRunId1 = 0;
-                    curRunId2 = curRunId2 + 1;
-                    if (curRunId2 >= 256) {
-                        curRunId2 = 0;
-                        curRunId3 = curRunId3 + 1;
-                    }
-                }
-            }
-            print(curRunId0 > 10,"-",curRunId0,"-",curRunId1,"-",curRunId2,"\n");
+            next_run_id();
 
             send_homeplug_mme(
               mme{ 
@@ -209,10 +230,18 @@ sm{
     t{WaitForCMSlacParmCnfsFailed;Initial;!gRetryAfterWaitForCMSlacParmCnfsFailed;};
 };
 
+Event evMMEPluginError;
+
+sm{
+    Watchdog;
+    states{Initial;Error;};
+    t{Initial;Error;evMMEPluginError;};
+};
+
 Simulation{
     Event EXIT;
     start_timer(60.0*s,EXIT);
     run_include_homeplug_mme_handler{};
-    Start{EV;};
+    Start{EV;Watchdog;};
     start_timer(2.0*s, evMatchingProcessStartTrigger);
 };

@@ -1,0 +1,16 @@
+#!/bin/bash
+rm CMakeFiles -rf
+rm cmake_install.cmake -f
+rm CMakeCache.txt -f
+rm Makefile -f
+rm lib* -f
+
+CEPSCORE=../../ceps/core MACHINES4CEPS=../../machines4ceps LOG4CEPS=../../log4ceps cmake ../ceps_plugin/ && make -j 12
+
+if [ $? -eq 0 ]; then
+LD_LIBRARY_PATH=$(pwd):$LD_LIBRARY_PATH ceps ../ceps_plugin/src/mme_defs.ceps ../ceps_plugin/src/mme_debug.ceps \
+../ceps_plugin/src/mme_handlers.ceps ../ceps_plugin/src/setup_mme_plugin.ceps \
+../ceps_plugin/src/sm.mme_handler_test.ceps ../ceps_plugin/src/tests/run_homeplug_mme_handlers.ceps --pluginlibslac4ceps.so
+fi
+
+

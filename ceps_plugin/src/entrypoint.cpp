@@ -88,9 +88,54 @@ static ceps::ast::node_t plugin_entrypoint_route_mme(ceps::ast::node_callparamet
       std::string host = "localhost";
       if(comm["host"].nodes().size() == 1) 
         host = comm["host"].as_str();
-      
 
+      addrinfo hints = {0}, *addrinfo_res = nullptr; memset(&hints,0,sizeof(hints));
 
+      hints.ai_flags = AI_NUMERICSERV;
+      hints.ai_family = AF_INET;
+      hints.ai_socktype = SOCK_SEQPACKET;
+      hints.ai_protocol = IPPROTO_SCTP;
+
+      auto sys_call_result = 0;
+      if ((sys_call_result = getaddrinfo(host.c_str(), port.c_str(), &hints,&addrinfo_res)) != 0 )
+      {
+        if (err_ev.size()) 
+          plugn.ceps_engine->queue_internal_event(err_ev,{ceps::ast::mk_string("getaddrinfo failed.")});
+        return nullptr;
+      }
+    
+      auto connectfd = socket(AF_INET, SOCK_SEQPACKET, IPPROTO_SCTP);
+
+      if (connectfd < 0)
+      {
+        if (err_ev.size()) 
+          plugn.ceps_engine->queue_internal_event(err_ev,{ceps::ast::mk_string("socket() failed.")});
+        return nullptr;
+      }
+
+      auto it = addrinfo_res;
+      addrinfo* res;
+      for(; it != nullptr ; it = it->ai_next){
+          res = it;
+          break;
+      }//for
+
+      if (it == nullptr)
+      {
+        if (err_ev.size()) 
+          plugn.ceps_engine->queue_internal_event(err_ev,{ceps::ast::mk_string("No addrinfo found.")});
+        return nullptr;
+      }
+
+      sctp_event_subscribe evnts {0};memset(&evnts,0,sizeof(evnts));
+      evnts.sctp_data_io_event = 1;
+      setsockopt(connectfd, IPPROTO_SCTP, SCTP_EVENTS, &evnts, sizeof(evnts));
+      {
+        std::lock_guard g{plugn.commfd_mtx};
+        plugn.commfd = connectfd;
+        plugn.last_client = *(sockaddr_in*)res->ai_addr;
+        plugn.last_client_len = res->ai_addrlen;
+      }
     }
 
     if (ceps::ast::Nodeset{t}["setup"]["run_tests"].nodes().size()){
@@ -182,11 +227,11 @@ static ceps::ast::node_t plugin_send_mme(ceps::ast::node_callparameters_t params
     if (commfd < 0) {
       return nullptr;
     }
-    sctp_sndrcvinfo sinfo = {0};
+    //sctp_sndrcvinfo sinfo = {0};
     uint32_t flags{0};
 
     auto r = sctp_sendmsg(commfd, mme_msg_buffer, std::max((size_t)60 , (size_t)payload_bytes_written + sizeof(homeplug_mme_generic_header)),(sockaddr*) &last_client,last_client_len,0 , flags, 0,0,0 );
-    auto err = errno;
+    //auto err = errno;
     return nullptr;
 }
 
