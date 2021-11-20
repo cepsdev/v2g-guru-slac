@@ -25,10 +25,14 @@ SOFTWARE.
 
 kind Event;
 kind Guard;
+kind Systemstate;
 Guard MMEPluginDebug;
+
 Event evMMEPluginInitialized;
+Event evEVMatchingProcessStartTrigger;
 
 MMEPluginDebug = 1;
+val TT_EVSE_SLAC_init = 20.0*s;
 
 macro include_homeplug_mme_handler{
 
@@ -122,18 +126,35 @@ macro run_include_homeplug_mme_handler{
 };
 
 include_homeplug_mme_handler{};
-
+Systemstate known_run_ids;
+known_run_ids = {};
 
 sm{
     EV;
-    states{Initial;WaitForCMSlacParmReqs; Final;};
+    states{Initial;WaitForMatchingProcessStartTrigger;WaitForCMSlacParmReqs; Final;};
     Actions{
         HandleCMSlacParmReq{
-            print("HandleCMSlacParmReq\n");
+            val run_id = {argv(1).run_id.content();};
+            print("HandleCMSlacParmReq: ", run_id , "\n");
+            //print("known_run_ids: ", known_run_ids , "\n");
+            known_run_ids = push_back(known_run_ids, run_id);
+            print("known_run_ids: ", known_run_ids , "\n");
+            print(known_run_ids.size(),"\n");
+            for(e : known_run_ids.content()){
+                print(e,"!\n");
+            }
         };
     };
-    t{Initial;WaitForCMSlacParmReqs;};
-    t{WaitForCMSlacParmReqs;WaitForCMSlacParmReqs;evCM_SLAC_PARM_REQ;HandleCMSlacParmReq;};
+    t{Initial;WaitForMatchingProcessStartTrigger;};
+    t{  WaitForMatchingProcessStartTrigger;
+        WaitForCMSlacParmReqs;
+        evEVMatchingProcessStartTrigger;};
+    
+    t{  WaitForCMSlacParmReqs;
+        WaitForCMSlacParmReqs;
+        evCM_SLAC_PARM_REQ;
+        HandleCMSlacParmReq;};
+
 };
 
 
@@ -142,4 +163,5 @@ Simulation{
     run_include_homeplug_mme_handler{};
     Start{EV;};
     start_timer(3600.0*s,EXIT);
+    evEVMatchingProcessStartTrigger;
 };

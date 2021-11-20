@@ -27,12 +27,14 @@ kind Event;
 kind Guard;
 kind Systemstate;
 Guard MMEPluginDebug;
+
 Event evMMEPluginInitialized;
+Event evEVMatchingProcessStartTrigger;
 
 MMEPluginDebug = 1;
 
 
-val TP_EV_SLAC_init = 1.0*s;
+val TP_EV_SLAC_init = 10.0*s;
 
 
 macro include_homeplug_mme_handler{
@@ -189,7 +191,7 @@ sm{
     states{Initial;WaitForMatchingProcessStartTrigger;SendCMSlacParmReq;WaitForCMSlacParmCnfs; WaitForCMSlacParmCnfsFailed; Final; };
     Actions{
         doSendCM_SLAC_PARM_REQ{
-            next_run_id();
+            //next_run_id();
 
             send_homeplug_mme(
               mme{ 
