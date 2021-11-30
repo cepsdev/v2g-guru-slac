@@ -53,7 +53,7 @@ void mme4ceps_plugin::handle_homeplug_mme(homeplug_mme_generic* msg, size_t mme_
   if (it == mme_msg_to_symbol_table_setup_routines.end()) return;
   if (associated_ceps_block == nullptr) return;
   if (!(this->*(it->second))(msg, mme_size)) return;
-  auto ceps_fragment = static_cast<ceps::ast::Nodebase_ptr>(plugin_master->evaluate_fragment_in_global_context(associated_ceps_block,&scope));
+  auto ceps_fragment = static_cast<ceps::ast::Nodebase_ptr>(plugin_master->evaluate_fragment_in_global_context_no_symbol_expansion(associated_ceps_block,&scope));
   if (!ceps_fragment) return;
   ceps_fragment = ceps_fragment->clone();
 
@@ -61,10 +61,14 @@ void mme4ceps_plugin::handle_homeplug_mme(homeplug_mme_generic* msg, size_t mme_
   auto on_message = ns["setup"]["on_message"];
 
   for(auto e : on_message.nodes()) {
-    ceps::ast::function_target_t func_id; 
+    std::string sym_name;
+    std::string kind_name; 
     ceps::ast::nodes_t args;
-    if (is_a_funccall(e,func_id,args)){
-				ceps_engine->queue_internal_event(func_id,args);
+    if (is_a_symbol_with_arguments(e,sym_name,kind_name,args)){
+      if (kind_name == "Event") plugin_master->queue_internal_event(sym_name,args);
+    } else if (ceps::ast::is_a_symbol(e)){
+      auto& sym = ceps::ast::as_symbol_ref(e);
+      if (ceps::ast::kind(sym) == "Event") plugin_master->queue_internal_event(ceps::ast::name(sym),{}); 
     }
   }
 
@@ -77,6 +81,3 @@ void mme4ceps_plugin::set_associated_ceps_block(ceps::ast::node_t v){
     init();
     gc(t);
 }
-
-
-

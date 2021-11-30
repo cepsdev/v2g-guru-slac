@@ -51,10 +51,11 @@ static mme4ceps_plugin plugn;
 static ceps::ast::node_t plugin_entrypoint_route_mme(ceps::ast::node_callparameters_t params){
     auto eval_ceps_handler = [&](std::vector<ceps::ast::node_t> v){
       for(auto e: v){
-        ceps::ast::function_target_t func_id; 
+        std::string sym_name;
+        std::string kind_name; 
         ceps::ast::nodes_t args;
-        if (is_a_funccall(e,func_id,args)){
-            plugn.ceps_engine->queue_internal_event(func_id,args);
+        if (is_a_symbol_with_arguments(e,sym_name,kind_name,args)){
+            if (kind_name == "Event") plugn.ceps_engine->queue_internal_event(sym_name,args);
         } else if (ceps::ast::is_a_symbol(e)){
           auto& sym = ceps::ast::as_symbol_ref(e);
           if (ceps::ast::kind(sym) == "Event") plugn.ceps_engine->queue_event(ceps::ast::name(sym),{}); 
@@ -65,7 +66,7 @@ static ceps::ast::node_t plugin_entrypoint_route_mme(ceps::ast::node_callparamet
     if (t) plugn.set_associated_ceps_block(t->clone());
     auto on_initplugin =  ceps::ast::Nodeset{t}["setup"]["on_initplugin"].nodes();
     eval_ceps_handler(on_initplugin);
-  
+
     //start_sctp_server
     auto comm = ceps::ast::Nodeset{t}["setup"]["communication"];
     auto err_ev_ns = ceps::ast::Nodeset{t}["setup"]["on_error"].nodes();
@@ -137,7 +138,7 @@ static ceps::ast::node_t plugin_entrypoint_route_mme(ceps::ast::node_callparamet
         plugn.last_client_len = res->ai_addrlen;
       }
     }
-
+        
     if (ceps::ast::Nodeset{t}["setup"]["run_tests"].nodes().size()){
       auto on_start_tests =  ceps::ast::Nodeset{t}["setup"]["on_start_tests"].nodes();
       auto on_end_tests =  ceps::ast::Nodeset{t}["setup"]["on_end_tests"].nodes();
@@ -145,7 +146,6 @@ static ceps::ast::node_t plugin_entrypoint_route_mme(ceps::ast::node_callparamet
       tests::handle_homeplug_mme::run_all(plugn);
       eval_ceps_handler(on_end_tests);
     }
-
     return nullptr;
 }
 

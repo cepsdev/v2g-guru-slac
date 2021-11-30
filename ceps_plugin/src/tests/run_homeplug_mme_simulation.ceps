@@ -42,7 +42,7 @@ sm{
     states{Initial;MMEPluginError;};
     Actions{
         onMMEError{
-            print("**** MME Plugin reported an error: '", argv(1),"'\n");
+            //print("**** MME Plugin reported an error: '", argv(0),"'\n");
         };
     };
     t{Initial;MMEPluginError;evMMEPluginError;onMMEError;};

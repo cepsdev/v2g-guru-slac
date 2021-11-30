@@ -101,7 +101,7 @@ sm{
                         on_mme_cm_amp_map_cnf{};
                     } else if ( CM_ATTEN_CHAR_IND == mme_type) {
                         on_mme_cm_atten_char_ind{};
-                    }       
+                    }
                 };            
             } 
         );

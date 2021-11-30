@@ -40,12 +40,15 @@ sm{
             as_identifier("received_"+text(e));
         }
     };
-
+   
     Actions{
 
         for (e: root.mme.handlers.content() ) {
             if (sm_mme_handler_test_debug){
-                e{ print ("\t [mme_handler_test] event = >>",argv(0),"<< payload = >>",argv(1),"<<\n");  };
+                e{ 
+                    print ("\t [mme_handler_test] event = >>",argv(0),"<<\n");
+                    print ("\t [mme_handler_test]payload = >>",argv(1),"<<\n");  
+                };
             } else {
                 e{   };
             }
@@ -53,6 +56,8 @@ sm{
         if (sm_mme_handler_test_debug){
 
             on_cm_slac_parm_req2{
+                        print ("\t [mme_handler_test] Details for >>",argv(0),"<<\n");
+                        print ("\t [mme_handler_test] application_type = >>",parameter.application_type.content(),"<<\n");
                         parameter = argv(1);
                         print ("\t [mme_handler_test] Details for >>",argv(0),"<< application_type = >>",parameter.application_type.content(),"<<\n");
                         print ("\t [mme_handler_test] Details for >>",argv(0),"<< security_type = >>",parameter.security_type.content(),"<<\n");
