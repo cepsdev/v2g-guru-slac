@@ -1,0 +1,99 @@
+label V2G3_A08_01 title = "Timings and Constants";
+
+label table_a_1_1 title = "Number of M-Sounds sent for the SLAC.";
+val C_EV_match_MNBC = 10;
+
+label table_a_1_2 title = "Number of retries of the corresponding message within the matching process.";
+val C_EV_match_retry = 2;
+
+label table_a_1_3 title = "Lower threshold for the signal strength measurement.";
+val C_EV_match_signalattn_direct = 10.0;
+
+label table_a_1_4 title = "Higher threshold for the signal strength measuremenet.";
+val C_EV_match_signalattn_indirect = 20.0;
+
+label table_a_1_5 title = "Number of CM_START_ATTEN_CHAR.INDs sent by the EV.";
+val C_EV_start_atten_char_inds = 3;
+
+label table_a_1_6 title = "Performance timer for the start of an AMP MAP Exchange. Either the EV or the EVSE shall send a CM_AMP_MAP.REQ within the\
+ max value of this timer after link is detected in order to trigger an AMP MAP Exchange.";
+val TP_amp_map_exchange = 0.1*s;
+Event evTP_amp_map_exchange_timeout;
+
+label table_a_1_6 title = "Number of CM_START_ATTEN_CHAR.INDs sent by the EV.";
+val TP_EV_batch_msg_interval = 0.05*s;
+Event evTP_EV_batch_msg_interval_timeout;
+
+label table_a_1_7 title = "Performance timer for the EV to start validation or SLAC_MATCH after sending CM_ATTEN_CHAR.RSP.";
+val TP_EV_match_session = 0.5*s;
+Event evTP_EV_match_session;
+
+label table_a_1_8 title = "Time between plug-in(state B detected) or wake-up and start of matching by the EV.";
+val TP_EV_SLAC_init = 10.0 * s;
+Event evTP_EV_SLAC_init_timeout;
+
+label table_a_1_9 title = "Performance time for the EVSE to calculate the average attenuation profile after reception of all M-SOUNDs or after TT_EVSE_match_MNBC has expired.";
+val TP_EVSE_avg_atten_calc = 0.1*s;
+Event evTP_EVSE_avg_atten_calc_timeout;
+
+label table_a_1_10 title = "";
+val TP_link_ready_notification = 1.0*s;
+Event evTP_link_ready_notification_timeout;
+
+label table_a_1_11 title = "General performance time for a response to a request.";
+val TP_match_response = 0.1*s; 
+Event evTP_match_response_timeout;
+
+label table_a_1_12 title = "General performance time for subsequent requests after a response to a previous request has been received.";
+val TP_match_sequence = 0.1*s;
+Event evTP_match_sequence_timeout;
+
+label table_a_1_13 title = "Timeout timer that runs on both EV and EVSE side after link is detected. If an EV or EVSE does not want to start an AMP MAP Exchange and no request is received by the other side within the timeout\
+ value of this timer, then it is to be assumed that no AMP MAP Exchange will take place and a D-LINK_READY.indication is to be sent to the HLE.";
+val TT_amp_map_exchange = 0.2*s;
+Event evTT_amp_map_exchange_timeout;
+
+label table_a_1_14 title = "Time the EV shall wait for CM_ATTEN_CHAR.INFD messages from EVSEs. Timer starts with the sending of the first CM_START_ATTEN_CHAR.IND.";
+val TT_EV_atten_results = 1.2*s;
+Event evTT_EV_atten_results_timeout;
+
+label table_a_1_15 title = "Timeout on EVSE side that trioggers the calculation of the average attenuation profile.";
+val TT_EVSE_match_MNBC = 0.6*s;
+Event evTT_EVSE_match_MNBC_timeout;
+
+label table_a_1_16 title = "Maximum time from the expiration of TT_EVSE_match_MNBC and the reception of either CM_VALIDATE.REQ or CM_SLAC_MATCH.REQ";
+val TT_EVSE_match_session = 10.0*s;
+Event TT_EVSE_match_session_timeout;
+
+label table_a_1_17 title = "Time between detecting state B and receiving CM_SLAC_PARM.REQ on the EVSE side.";
+val TT_EVSE_SLAC_init = 50.0*s;
+Event evTT_EVSE_SLAC_init_timeout;
+
+label table_a_1_19 title = "Maximum time between CM_SLAC_MATCH.CNF and link establishment if there is no link after this timeout expires, EV retries matching process and EVSE resets its state machine.";
+val TT_match_join = 12*s;
+Event evTT_match_join_timeout;
+
+label table_a_1_19 title = "Time that the EVSE/EV shall wait for a response from the EV/EVSE.";
+val TT_match_response = 0.2*s;
+Event evTT_match_response_timeout;
+
+label table_a_1_18 title = "Time that the EV/EVSE shall wait for a request from the EV/EVSE.";
+val TT_match_sequence = 0.4*s;
+Event evTT_match_sequence_timeout;
+
+label table_a_1_20 title = "Time duration for the repetition of the matching process when an error occurs.";
+val TT_matching_repetition = 10*s;
+Event evTT_matching_repetition_timeout;
+
+
+label table_a_1_21 title = "Time to wait for a repetition of the whole matching process after a failed matching process.";
+val TT_matching_rate = 0.4*s;
+Event evTT_matching_rate_timeout;
+
+
+
+
+
+
+
+
