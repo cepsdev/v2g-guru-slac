@@ -1,1 +1,101 @@
-../ceps_plugin/src/mme_defs.ceps
+/*
+* Definition of management message types relevant for SLAC.
+*/
+
+
+// A message falls in one of the following four categories
+
+val MME_REQ = 0;
+val MME_CNF = 1;
+val MME_IND = 2;
+val MME_RSP = 3;
+
+// Base encoding 
+
+val CM_SLAC_PARM_BASE           = 0x6064;
+val CM_SET_KEY_BASE             = 0x6008;
+val CM_AMP_MAP_BASE             = 0x601C;
+val CM_START_ATTEN_CHAR_BASE    = 0x6068;
+val CM_ATTEN_CHAR_BASE          = 0x606C;
+val CM_MNBC_SOUND_BASE          = 0x6074;
+val CM_VALIDATE_BASE            = 0x6078;
+val CM_SLAC_MATCH_BASE          = 0x607C;
+val CM_ATTEN_PROFILE_BASE       = 0x6084;
+
+// Base + category
+
+val CM_SLAC_PARM_REQ            = CM_SLAC_PARM_BASE + MME_REQ;
+val CM_SLAC_PARM_CNF            = CM_SLAC_PARM_BASE + MME_CNF;
+val CM_START_ATTEN_CHAR_IND     = CM_START_ATTEN_CHAR_BASE + MME_IND;
+val CM_MNBC_SOUND_IND           = CM_MNBC_SOUND_BASE + MME_IND;
+val CM_ATTEN_CHAR_IND           = CM_ATTEN_CHAR_BASE + MME_IND;
+val CM_ATTEN_PROFILE_IND        = CM_ATTEN_PROFILE_BASE + MME_IND;
+val CM_ATTEN_CHAR_RSP           = CM_ATTEN_CHAR_BASE + MME_RSP;
+val CM_VALIDATE_REQ             = CM_VALIDATE_BASE + MME_REQ;
+val CM_VALIDATE_CNF             = CM_VALIDATE_BASE + MME_CNF;
+val CM_SLAC_MATCH_REQ           = CM_SLAC_MATCH_BASE + MME_REQ;
+val CM_SLAC_MATCH_CNF           = CM_SLAC_MATCH_BASE + MME_CNF;
+val CM_SET_KEY_REQ              = CM_SET_KEY_BASE + MME_REQ;
+val CM_SET_KEY_CNF              = CM_SET_KEY_BASE + MME_CNF;
+val CM_AMP_MAP_REQ              = CM_AMP_MAP_BASE + MME_REQ;
+val CM_AMP_MAP_CNF              = CM_AMP_MAP_BASE + MME_CNF;
+
+mme{
+    messages{
+        cm_slac_parm_req; 
+        cm_slac_parm_cnf; 
+        cm_start_atten_char_ind; 
+        cm_mnbc_sound_ind; 
+        cm_atten_profile_ind;
+        cm_atten_char_rsp; 
+        cm_validate_req; 
+        cm_validate_cnf; 
+        cm_slac_match_req;
+        cm_slac_match_cnf;
+        cm_set_key_req;
+        cm_amp_map_req;
+        cm_amp_map_cnf; 
+        cm_atten_char_ind;
+    };
+};
+
+mme{
+    handlers{
+        for(e : root.mme.messages.content()){
+            as_identifier("on_"+text(e));
+        }
+    };
+};
+
+
+val sm_mme_handler_test_debug = 0;
+
+Event   evCM_SLAC_PARM_REQ,
+        evCM_SLAC_PARM_CNF,
+        evCM_START_ATTEN_CHAR_IND,
+        evCM_MNBC_SOUND_IND,
+        evCM_ATTEN_PROFILE_IND,
+        evCM_ATTEN_CHAR_RSP,
+        evCM_VALIDATE_REQ,
+        evCM_VALIDATE_CNF,
+        evCM_SLAC_MATCH_REQ,
+        evCM_SLAC_MATCH_CNF,
+        evCM_SET_KEY_REQ,
+        evCM_SET_KEY_CNF,
+        evCM_AMP_MAP_REQ,
+        evCM_AMP_MAP_CNF,
+        evCM_ATTEN_CHAR_IND;
+
+schema{
+
+ evCM_MNBC_SOUND_IND(
+     payload{
+         application_type{0;};
+         security_type{0;};
+         sender_id{for(e:1 .. 17){e;}};
+         cnt{7;};
+         run_id{for(e:1 .. 8){e;}};
+         rnd{for(e:1 .. 16){e;}};
+     }
+ );
+};

@@ -1,39 +1,123 @@
 Event   evMatchingProcessStartTrigger,
-        /*evTP_EV_SLAC_init_timeout,
-        evTT_match_response_timeout,
-        evCM_SLAC_PARM_REQ,
-        evCM_SLAC_PARM_CNF,*/
         evEVParameterExchangeDone;
 
-val time_scale = 1.0;
-val TP_EV_SLAC_init = time_scale*10.0*s;
-val TT_match_response = time_scale*0.1*s;
-
+val debug_output = 0;
 
 //The EV communicates with multiple EVSEs, we limit the number of communication partners.
 val max_parallel_sessions = 4;  
 
 Systemstate current_session_id;
-print("!\n");
 current_session_id = 0;
-print(current_session_id,"!\n");
 
-Systemstate confirmation_counter;
+Systemstate confirmation_counter, current_run_id_content, cm_slac_parm_cnf_validity_ok;
 confirmation_counter = 0;
 Guard gNoConfirmations;
 Guard gConfirmationsArrived;
 gConfirmationsArrived = confirmation_counter > 0;
-
 gNoConfirmations = confirmation_counter == 0;
+
+Systemstate param_exchange_retry;
+param_exchange_retry = 0;
+
+Guard gEVMatchRetryLeft,gNotEVMatchRetryLeft;
+gEVMatchRetryLeft = C_EV_match_retry > param_exchange_retry;
+gNotEVMatchRetryLeft = C_EV_match_retry <= param_exchange_retry;
+
+Systemstate sound_counter;
+
+Systemstate known_evses;
+
+known_evses = {for(e: 1 .. 10){source_address{};}};
+validate_evses = {for(e: 1 .. 10){source_address{};}};
+
+
+Systemstate potential_evses_found;
+potential_evses_found = 0;
+
+Guard gProceedAfterCollectingAttenCharInds;
+gProceedAfterCollectingAttenCharInds = potential_evses_found > 0;
+Guard gDoNotProceedAfterCollectingAttenCharInds;
+gDoNotProceedAfterCollectingAttenCharInds = potential_evses_found == 0;
+
+Guard gEVSEs_were_found;
+Guard gEVSEs_were_not_found;
+gEVSEs_were_not_found = !gEVSEs_were_found;
+
+
+label V2G3_A09_48 title="[V2G3-A09-48]";
+Guard gInsistOnValidationIfEVSEsFound;
+Guard gDontInsistOnValidationIfEVSEsFound;
+gInsistOnValidationIfEVSEsFound = 1;
+gDontInsistOnValidationIfEVSEsFound = !gInsistOnValidationIfEVSEsFound;
+
+Systemstate validate_evses;
+
+Systemstate validation_evse_ctr,validation_evses;
+Guard gEvseForValidationLeft;
+Guard gNoEvseForValidationLeft;
+gEvseForValidationLeft = validation_evse_ctr > validation_evses;
+gNoEvseForValidationLeft = !gEvseForValidationLeft;
+
+macro Validation{
+    Event evValidationStep2;
+    sm{
+        Validation;
+        states{Initial;};
+        on_enter{
+            print("[Validation] Number of EVSEs to validate: ",validate_evses.size(),"\n");
+            validation_evse_ctr = 0;
+            validation_evses = validate_evses.size();
+        };
+        sm{
+            Step_1;
+            states{ Initial;
+                    SendCM_VALIDATE_REQ;
+                    WaitForCM_VALIDATE_CNF;};
+            on_enter{
+                print("[Validation][Step_1] EVSE: ",validate_evses.at(validation_evse_ctr),"\n");
+                {
+                    
+                }
+
+            };
+            
+        };
+        sm{
+            Step_2;
+            states{Initial;};
+        };
+
+        t{Initial;Step_1;};
+        t{Step_1;Step_2;evValidationStep2;};
+
+    };
+};
+
 
 sm{
     EV;
+    cover{
+        edges_upto_1;
+    };
     states{ Initial;
             WaitForMatchingProcessStartTrigger;
             ParameterExchangeSucceeded;
             ParameterExchangeFailed;
+            PrepareSignalStrengthMeasurement;
+            SLACFailed;
+            SLACFailedTotally;
+            SkipValidation;
         };
-    
+    Actions{
+        doStartSLAC{
+            label v2g3_table_a1 title = "[V2G3 Table_A1] TP_EV_SLAC_init spans the time between state B/wakeup and very first request.";
+            start_timer(TP_EV_SLAC_init,evTP_EV_SLAC_init_timeout,TP_EV_SLAC_init_timeout);
+            start_timer(TT_matching_repetition,evTT_matching_repetition_timeout);
+        };
+        doStartSLACRetry{
+            start_timer(TP_EV_SLAC_init,evTP_EV_SLAC_init_timeout,TP_EV_SLAC_init_timeout);
+        };
+    };
     sm{
         ParameterExchange;
         states{ Initial;
@@ -41,26 +125,38 @@ sm{
                 ConfirmationsWithinTimeWindow;
             };
         on_enter{
-            current_session_id = current_session_id + 1;
-            start_timer(TP_EV_SLAC_init,evTP_EV_SLAC_init_timeout,TP_EV_SLAC_init_timeout);
+            
         };
 
         sm{
             WaitForConfirmations;
             states{Initial;Wait;CheckValidity;};
             on_enter{
-                evCM_SLAC_PARM_REQ(
-                   payload{
-                    run_id{current_session_id;};
-                    application_type{0;};
-                    security_type{0;};
-                   }
-                );
+                label v2g3_table_a2 title = "[V2G3 Table A2] Session starts with evCM_SLAC_PARM_REQ.";
+                current_session_id = current_session_id +  1;
+                current_run_id_content = {current_session_id;0;0;0;0;0;0;0;};
+                {
+                    evCM_SLAC_PARM_REQ(
+                        payload{
+                            run_id{current_session_id;0;0;0;0;0;0;0;};
+                            application_type{0;};
+                            security_type{0;};
+                        }
+                    );
+                }
+                kill_timer(TP_EV_SLAC_init_timeout);
+                label V2G3_A09_07 title="[V2G3-A09-07]";
                 start_timer(TT_match_response,evTT_match_response_timeout,TT_match_response_timeout);
             };
             Actions{
                 doCheckValidity{
-                    confirmation_counter = confirmation_counter +1;
+                    // event name is argv(0)
+                    // #1 argument of event is argv(1)
+                    cm_slac_parm_cnf_validity_ok = argv(1).payload.run_id.content() == current_run_id_content; 
+                    //print("cm_slac_parm_cnf_validity_ok: ", cm_slac_parm_cnf_validity_ok,"\n");
+                    if(cm_slac_parm_cnf_validity_ok){ 
+                        confirmation_counter = confirmation_counter +1;
+                    }
                 };
             };
             t{Initial;Wait;};
@@ -74,25 +170,250 @@ sm{
                     evEVParameterExchangeDone;
                 }
             };
+            doRetry{
+                param_exchange_retry = param_exchange_retry + 1;
+            };
         };
 
         t{Initial;WaitForConfirmations;};
         t{WaitForConfirmations;NoConfirmationsWithinTimeWindow;evTT_match_response_timeout;gNoConfirmations;};
         t{WaitForConfirmations;ConfirmationsWithinTimeWindow;evTT_match_response_timeout;gConfirmationsArrived;doParameterExchangeDone;};
-        t{NoConfirmationsWithinTimeWindow;WaitForConfirmations;};
+        t{NoConfirmationsWithinTimeWindow;WaitForConfirmations;gEVMatchRetryLeft;doRetry;};
     };
 
     t{Initial;WaitForMatchingProcessStartTrigger;};
-    t{WaitForMatchingProcessStartTrigger;ParameterExchange;evMatchingProcessStartTrigger;};
+    t{WaitForMatchingProcessStartTrigger;ParameterExchange;evMatchingProcessStartTrigger;doStartSLAC;};
 
     t{ParameterExchange;ParameterExchangeSucceeded;evEVParameterExchangeDone;};
     t{ParameterExchange;ParameterExchangeFailed;evTP_EV_SLAC_init_timeout;};
+
+    label V2G3_a09_25 title ="[V2G3-A09-25]"; 
+    //TP_match_sequence
+    Actions{
+        doPrepareSignalStrengthMeasurement{
+            start_timer(TP_match_sequence,evTP_match_sequence_timeout,TP_match_sequence_timeout);
+        };     
+    };
+    t{ParameterExchangeSucceeded;PrepareSignalStrengthMeasurement;doPrepareSignalStrengthMeasurement;};
+    t{PrepareSignalStrengthMeasurement; SignalStrengthMeasurement;evTP_match_sequence_timeout;};
+    sm{
+        SignalStrengthMeasurement;
+        states{Initial; Final;
+            for(e : 1 .. C_EV_start_atten_char_inds ){
+                as_identifier("send_cm_start_atten_char_ind ("+e+" of "+C_EV_start_atten_char_inds+")");
+            }
+        };
+
+        on_enter{
+            start_periodic_timer(TP_EV_batch_msg_interval, evTP_EV_batch_msg_interval_timeout,TP_EV_batch_msg_interval_timeout);
+            start_timer(TT_EV_atten_results,evTT_EV_atten_results_timeout);
+        };
+        Actions{
+            doSendCM_START_ATTEN_CHAR_IND{
+                print("doSendCM_START_ATTEN_CHAR_IND\n");
+                {
+                    evCM_START_ATTEN_CHAR_IND(
+                    payload{
+                        run_id{current_session_id;0;0;0;0;0;0;0;};
+                        application_type{0;};
+                        security_type{0;};
+                        num_sounds{C_EV_match_MNBC;};
+                    }
+                    );
+                }
+          };
+        };
+        t{Initial;as_identifier("send_cm_start_atten_char_ind (1 of "+C_EV_start_atten_char_inds+")");doSendCM_START_ATTEN_CHAR_IND;};
+
+        for(e : 1 .. C_EV_start_atten_char_inds-1 ){
+            t{as_identifier("send_cm_start_atten_char_ind ("+e+" of "+C_EV_start_atten_char_inds+")");
+              as_identifier("send_cm_start_atten_char_ind ("+(e+1)+" of "+C_EV_start_atten_char_inds+")");
+              evTP_EV_batch_msg_interval_timeout;
+              doSendCM_START_ATTEN_CHAR_IND;
+            };        
+        }
+
+        t{ as_identifier("send_cm_start_atten_char_ind ("+C_EV_start_atten_char_inds+" of "+C_EV_start_atten_char_inds+")");
+           MakeSounds;
+           evTP_EV_batch_msg_interval_timeout;
+        };
+
+        sm{
+            MakeSounds;
+            states{Initial; Final;//CollectConfirmations;
+                for(e : 1 .. C_EV_match_MNBC ){
+                    as_identifier("send_cm_mnbc_sound_ind ("+e+" of "+C_EV_match_MNBC+")");
+                }
+            };
+            on_enter{
+                sound_counter = C_EV_match_MNBC;
+                kill_timer(TP_EV_batch_msg_interval_timeout);
+                label V2G32_A09_29 title="[V2G32-A09-29] TP_EV_batch_msg_interval seconds delay between the individual messages.";
+                start_periodic_timer(TP_EV_batch_msg_interval, evTP_EV_batch_msg_interval_timeout, TP_EV_batch_msg_interval_timer);
+            };
+
+            on_exit{
+                kill_timer(TP_EV_batch_msg_interval_timer);
+            };
+
+
+            Actions{
+                doSendSound{
+                    {
+                     evCM_MNBC_SOUND_IND(
+                        payload{
+                            application_type{0;};
+                            security_type{0;};
+                            sender_id{for(e:1 .. 17){e;}};
+                            cnt{sound_counter;};
+                            run_id{current_session_id;0;0;0;0;0;0;0;};
+                            rnd{for(e:1 .. 16){e;}};
+                        }
+                    );
+                    label V2G3_A09_28 title="[V2G3-A09-28] We decrement value of field cnt.";
+                    sound_counter = sound_counter - 1;
+                    }
+                };
+            };
+            t{Initial;as_identifier("send_cm_mnbc_sound_ind (1 of "+C_EV_match_MNBC+")");
+              evTP_EV_batch_msg_interval_timeout;doSendSound;};
+            for(e : 1 .. C_EV_match_MNBC-1 ){
+                t{
+                    as_identifier("send_cm_mnbc_sound_ind ("+e+" of "+C_EV_match_MNBC+")");
+                    as_identifier("send_cm_mnbc_sound_ind ("+(e+1)+" of "+C_EV_match_MNBC+")");
+                    evTP_EV_batch_msg_interval_timeout;
+                    doSendSound;
+                };
+            }
+            
+
+            t{as_identifier("send_cm_mnbc_sound_ind ("+C_EV_match_MNBC+" of "+C_EV_match_MNBC+")");CollectConfirmations;};
+
+            sm{
+                CollectConfirmations;
+                Systemstate evse_found;
+                Systemstate evse_found_at;
+                Systemstate evse_next_free_slot;
+                Systemstate evse_ctr;
+                Systemstate already_inserted;
+
+                states{Initial;
+                       WaitForCM_ATTEN_CHAR_IND;
+                       ReceivedCM_ATTEN_CHAR_IND;
+                       NoPotentialEVSEFound;PotentialEVSEFound;
+                };
+
+                Actions{
+                    doProcessCM_ATTEN_CHAR_IND{
+                        evse_found = 0;
+                        evse_found_at = 0;
+                        evse_next_free_slot = known_evses.source_address.size();
+                        evse_ctr = 0;
+                        already_inserted = 0;
+                        gEVSEs_were_found = evse_found;
+                        if(debug_output) print("CollectConfirmations::doProcessCM_ATTEN_CHAR_IND:\n");
+
+                        if(debug_output)print(argv(1).payload.source_address,"\n");
+                        if(debug_output)print("**** Known EVSEs:\n", known_evses,"\n");
+                        for(e: known_evses.source_address){
+                            if(e == argv(1).payload.source_address && !evse_found){
+                                evse_found = 1;
+                                evse_found_at = evse_ctr;
+                            }
+                            if (evse_next_free_slot == known_evses.source_address.size() && e.content().size() == 0){
+                                evse_next_free_slot = evse_ctr;
+                            }
+                            evse_ctr = evse_ctr + 1;
+                        }
+                        if(debug_output)print("evse_found=",evse_found," evse_found_at= ",evse_found_at," evse_next_free_slot= ",evse_next_free_slot, "\n");
+                        if (!evse_found && evse_next_free_slot < known_evses.source_address.size()){
+                            known_evses = {
+                                for(e : known_evses.source_address){
+                                    if (e.content().size() == 0 && !already_inserted){
+                                        argv(1).payload.source_address;
+                                        ignore_value{
+                                            already_inserted = 1;
+                                        };
+                                    } else {
+                                        e;
+                                    }
+                                }
+                            };
+                        }
+                        if(debug_output)print("**** Known EVSEs after update:\n", known_evses,"\n");
+                        if (evse_found){
+                            potential_evses_found = 1;
+                        }
+                        validate_evses = { for(e : known_evses.source_address){if(e.content().size()){e;}}};
+                    };
+                };
+                t{Initial;WaitForCM_ATTEN_CHAR_IND;};
+                t{WaitForCM_ATTEN_CHAR_IND;ReceivedCM_ATTEN_CHAR_IND;evCM_ATTEN_CHAR_IND;doProcessCM_ATTEN_CHAR_IND;};
+                t{ReceivedCM_ATTEN_CHAR_IND;WaitForCM_ATTEN_CHAR_IND;};
+                t{WaitForCM_ATTEN_CHAR_IND;PotentialEVSEFound;evTT_EV_atten_results_timeout;gProceedAfterCollectingAttenCharInds;};
+                t{WaitForCM_ATTEN_CHAR_IND;NoPotentialEVSEFound;evTT_EV_atten_results_timeout;gDoNotProceedAfterCollectingAttenCharInds;};
+            };
+        };
+    };
+    label V2G3_A09_32 title="[V2G3-A09-32]";
+    t{SignalStrengthMeasurement.MakeSounds.CollectConfirmations.NoPotentialEVSEFound;SLACFailed;};
+    t{SLACFailed;ParameterExchange;doStartSLACRetry;};
+    t{ParameterExchange;SLACFailedTotally;evTT_matching_repetition_timeout;};
+    t{SignalStrengthMeasurement;SLACFailedTotally;evTT_matching_repetition_timeout;};
+    label V2G3_A09_48 title="[V2G3-A09-48]";
+    t{SignalStrengthMeasurement.MakeSounds.CollectConfirmations.PotentialEVSEFound;Validation;gInsistOnValidationIfEVSEsFound;};
+    t{SignalStrengthMeasurement.MakeSounds.CollectConfirmations.PotentialEVSEFound;SkipValidation;gDontInsistOnValidationIfEVSEsFound;};
+
+    Validation{};
+
 };
 
 
+//Guard gEVIsInIndCollect;
+//gEVIsInIndCollect = in_state(EV.SignalStrengthMeasurement.MakeSounds.CollectConfirmations.WaitForCM_ATTEN_CHAR_IND);
+
+
+sm{
+    MySmartTest;
+    states{Initial;
+        WaitForCM_SLAC_PARM_REQ;
+        CountSounds;
+        for(e : 1 .. C_EV_match_MNBC ){
+            as_identifier("cm_mnbc_sound_ind "+e+" of "+C_EV_match_MNBC);
+        }   
+    };
+
+    sm{TestRun;
+     states{Initial;};
+     on_enter{
+         ThreeEVSEs{};
+     };//on_enter
+    };
+    Actions{
+        doSendCM_SLAC_PARM_CNF{
+            {
+                evCM_SLAC_PARM_CNF(
+                    payload{
+                        argv(1).payload.run_id;
+                    }
+                );
+            }
+        };
+    };
+    t{Initial;WaitForCM_SLAC_PARM_REQ;};
+    t{WaitForCM_SLAC_PARM_REQ;CountSounds;evCM_SLAC_PARM_REQ;doSendCM_SLAC_PARM_CNF;};
+    t{CountSounds;as_identifier("cm_mnbc_sound_ind 1 of "+C_EV_match_MNBC);evCM_MNBC_SOUND_IND;};
+    for(e : 1 .. C_EV_match_MNBC - 1){
+        t{  as_identifier("cm_mnbc_sound_ind "+e+" of "+C_EV_match_MNBC);
+            as_identifier("cm_mnbc_sound_ind "+(e+1)+" of "+C_EV_match_MNBC);
+            evCM_MNBC_SOUND_IND;
+        };
+    }
+    t{as_identifier("cm_mnbc_sound_ind "+C_EV_match_MNBC+" of "+C_EV_match_MNBC);
+      TestRun;};
+};
 
 Simulation{
-    Start{EV;};
-    evMatchingProcessStartTrigger;
-    start_timer(3.0*s,evCM_SLAC_PARM_CNF);
+    Start{MySmartTest;};
+    start_timer(0.2*s,evMatchingProcessStartTrigger);
 };
