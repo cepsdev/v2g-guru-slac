@@ -16,7 +16,7 @@ sm{
             setup {
                 communication{
                     port{"56800";};
-                    as_server{1;};
+                    as_server{0;};
                 };
                 on_initplugin{
                     evMMEPluginInitialized;

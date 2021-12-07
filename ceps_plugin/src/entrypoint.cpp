@@ -237,10 +237,10 @@ static ceps::ast::node_t plugin_send_mme(ceps::ast::node_callparameters_t params
 
 extern "C" void init_plugin(IUserdefined_function_registry* smc)
 {
-  
   plugn.ceps_engine = plugn.plugin_master = plugin_master = smc->get_plugin_interface(); 
   plugin_master->reg_ceps_plugin("homeplug_mme_handler", plugin_entrypoint_route_mme);
   plugin_master->reg_ceps_plugin("send_homeplug_mme",plugin_send_mme);
+  plugin_master->run_indefinitely(true);
 }
 
 

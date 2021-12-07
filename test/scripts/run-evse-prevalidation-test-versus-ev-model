@@ -1,0 +1,3 @@
+#!/bin/bash
+
+ceps ../../model/common.ceps ../../model/mme_defs.ceps ../../model/timing.ceps ../evse/sm.pre_validation.ceps ../../model/ev/ev.ceps ../evse/sim.pre_validation.ceps

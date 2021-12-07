@@ -49,9 +49,34 @@ sm{
     t{MMEPluginError;MMEPluginError;evMMEPluginError;onMMEError;};
 };
 
+Systemstate seconds_left;
+seconds_left = 7;
+
+sm{
+    PrintInfo;
+    Event evPrintInfo;
+    states{Initial;PrintedInfo;};
+    on_enter{
+        {
+            start_periodic_timer(1.0*s,evPrintInfo);
+            seconds_left = seconds_left - 1;
+        }
+    };
+    Actions{
+        doPrintInfo{
+            print("\n**** Test will terminate in ",seconds_left," seconds.\n");
+            seconds_left = seconds_left - 1;
+        };
+    };
+    t{Initial;PrintedInfo;evPrintInfo;doPrintInfo;};
+    t{PrintedInfo;Initial;};
+};
 
 Simulation{
+    Event EXIT;
+    start_timer(seconds_left*s,EXIT);
+
     MMEPluginDebug = 0;
-    Start{watchdog_mme_tests;watchdog_mme_plugin;};
+    Start{watchdog_mme_tests;watchdog_mme_plugin;PrintInfo;};
     run_include_homeplug_mme_handler{};
 };

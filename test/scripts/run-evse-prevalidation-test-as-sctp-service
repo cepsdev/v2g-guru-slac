@@ -1,0 +1,10 @@
+#!/bin/bash
+
+LD_LIBRARY_PATH=../../bin:$LD_LIBRARY_PATH ceps ../../model/common.ceps \
+../../model/mme_defs.ceps \
+../../model/timing.ceps \
+../../ceps_plugin/src/mme_handlers.ceps \
+../../ceps_plugin/src/setup_mme_plugin.ceps \
+../evse/sm.pre_validation.ceps \
+../evse/sim.pre_validation_with_mme_plugin.ceps \
+--pluginlibslac4ceps.so

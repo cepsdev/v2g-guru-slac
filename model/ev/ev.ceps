@@ -64,7 +64,7 @@ macro Validation{
         Validation;
         states{Initial;};
         on_enter{
-            print("[Validation] Number of EVSEs to validate: ",validate_evses.size(),"\n");
+            if (debug_output) print("[Validation] Number of EVSEs to validate: ",validate_evses.size(),"\n");
             validation_evse_ctr = 0;
             validation_evses = validate_evses.size();
         };
@@ -74,7 +74,7 @@ macro Validation{
                     SendCM_VALIDATE_REQ;
                     WaitForCM_VALIDATE_CNF;};
             on_enter{
-                print("[Validation][Step_1] EVSE: ",validate_evses.at(validation_evse_ctr),"\n");
+                if (debug_output) print("[Validation][Step_1] EVSE: ",validate_evses.at(validation_evse_ctr),"\n");
                 {
                     
                 }
@@ -310,8 +310,8 @@ sm{
                         evse_next_free_slot = known_evses.source_address.size();
                         evse_ctr = 0;
                         already_inserted = 0;
-                        gEVSEs_were_found = evse_found;
                         if(debug_output) print("CollectConfirmations::doProcessCM_ATTEN_CHAR_IND:\n");
+                        if(debug_output)print("\t argv(1) =",argv(1),"\n");
 
                         if(debug_output)print(argv(1).payload.source_address,"\n");
                         if(debug_output)print("**** Known EVSEs:\n", known_evses,"\n");
@@ -341,8 +341,9 @@ sm{
                             };
                         }
                         if(debug_output)print("**** Known EVSEs after update:\n", known_evses,"\n");
-                        if (evse_found){
+                        if (evse_found || already_inserted){
                             potential_evses_found = 1;
+                            gEVSEs_were_found = 1;
                         }
                         validate_evses = { for(e : known_evses.source_address){if(e.content().size()){e;}}};
                     };
@@ -366,54 +367,4 @@ sm{
 
     Validation{};
 
-};
-
-
-//Guard gEVIsInIndCollect;
-//gEVIsInIndCollect = in_state(EV.SignalStrengthMeasurement.MakeSounds.CollectConfirmations.WaitForCM_ATTEN_CHAR_IND);
-
-
-sm{
-    MySmartTest;
-    states{Initial;
-        WaitForCM_SLAC_PARM_REQ;
-        CountSounds;
-        for(e : 1 .. C_EV_match_MNBC ){
-            as_identifier("cm_mnbc_sound_ind "+e+" of "+C_EV_match_MNBC);
-        }   
-    };
-
-    sm{TestRun;
-     states{Initial;};
-     on_enter{
-         ThreeEVSEs{};
-     };//on_enter
-    };
-    Actions{
-        doSendCM_SLAC_PARM_CNF{
-            {
-                evCM_SLAC_PARM_CNF(
-                    payload{
-                        argv(1).payload.run_id;
-                    }
-                );
-            }
-        };
-    };
-    t{Initial;WaitForCM_SLAC_PARM_REQ;};
-    t{WaitForCM_SLAC_PARM_REQ;CountSounds;evCM_SLAC_PARM_REQ;doSendCM_SLAC_PARM_CNF;};
-    t{CountSounds;as_identifier("cm_mnbc_sound_ind 1 of "+C_EV_match_MNBC);evCM_MNBC_SOUND_IND;};
-    for(e : 1 .. C_EV_match_MNBC - 1){
-        t{  as_identifier("cm_mnbc_sound_ind "+e+" of "+C_EV_match_MNBC);
-            as_identifier("cm_mnbc_sound_ind "+(e+1)+" of "+C_EV_match_MNBC);
-            evCM_MNBC_SOUND_IND;
-        };
-    }
-    t{as_identifier("cm_mnbc_sound_ind "+C_EV_match_MNBC+" of "+C_EV_match_MNBC);
-      TestRun;};
-};
-
-Simulation{
-    Start{MySmartTest;};
-    start_timer(0.2*s,evMatchingProcessStartTrigger);
 };

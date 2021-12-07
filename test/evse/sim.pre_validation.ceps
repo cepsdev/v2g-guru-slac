@@ -1,0 +1,5 @@
+Simulation{
+    Event evMatchingProcessStartTrigger;
+    Start{EVSEPreValidation;};
+    start_timer(0.2*s,evMatchingProcessStartTrigger);
+};

@@ -1,0 +1,72 @@
+Systemstate EVSEPreValidationTest_run_id; 
+
+sm{
+    EVSEPreValidation;
+    states{Initial;
+        WaitForCM_SLAC_PARM_REQ;
+        CountSounds;
+        for(e : 1 .. C_EV_match_MNBC ){
+            as_identifier("cm_mnbc_sound_ind "+e+" of "+C_EV_match_MNBC);
+        }   
+    };
+
+    sm{
+     TestRun;
+     states{Initial;};
+     on_enter{
+         {
+            val delta = time_scale*0.1*s;
+            start_timer(delta,evCM_ATTEN_CHAR_IND(
+            payload{
+                application_type{
+                    0;
+                };
+                security_type{
+                    0;
+                };
+                source_address{
+                    1;2;3;4;5;
+                };                                        
+                EVSEPreValidationTest_run_id;                                        
+                source_id{
+                    0;
+                };                                        
+                resp_id{
+                    0;
+                };                                        
+                num_sounds{
+                    10;
+                };                                        
+                atten_profile{
+                    {1;2;3;};
+                };
+            })
+            );
+         }
+     };//on_enter
+    };
+
+    Actions{
+        doSendCM_SLAC_PARM_CNF{
+            {
+                EVSEPreValidationTest_run_id = argv(1).payload.run_id;
+                evCM_SLAC_PARM_CNF(
+                    payload{
+                        argv(1).payload.run_id;
+                    }
+                );
+            }
+        };
+    };
+    t{Initial;WaitForCM_SLAC_PARM_REQ;};
+    t{WaitForCM_SLAC_PARM_REQ;CountSounds;evCM_SLAC_PARM_REQ;doSendCM_SLAC_PARM_CNF;};
+    t{CountSounds;as_identifier("cm_mnbc_sound_ind 1 of "+C_EV_match_MNBC);evCM_MNBC_SOUND_IND;};
+    for(e : 1 .. C_EV_match_MNBC - 1){
+        t{  as_identifier("cm_mnbc_sound_ind "+e+" of "+C_EV_match_MNBC);
+            as_identifier("cm_mnbc_sound_ind "+(e+1)+" of "+C_EV_match_MNBC);
+            evCM_MNBC_SOUND_IND;
+        };
+    }
+    t{as_identifier("cm_mnbc_sound_ind "+C_EV_match_MNBC+" of "+C_EV_match_MNBC);
+      TestRun;};
+};
