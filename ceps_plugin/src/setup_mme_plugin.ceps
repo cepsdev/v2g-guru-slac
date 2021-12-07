@@ -30,9 +30,11 @@ sm{
                 on_error{
                     evMMEPluginError;
                 };
-                dont_run_tests{
-                    all;
-                };
+                if (homeplug_mme_handler_run_tests){
+                    run_tests{
+                        all;
+                    };
+                }
                 on_message{
                     if(CM_SLAC_PARM_REQ == mme_type){
                         on_mme_cm_slac_parm_eq{};

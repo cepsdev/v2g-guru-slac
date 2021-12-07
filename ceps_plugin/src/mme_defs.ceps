@@ -85,3 +85,5 @@ Event   evCM_SLAC_PARM_REQ,
         evCM_AMP_MAP_REQ,
         evCM_AMP_MAP_CNF,
         evCM_ATTEN_CHAR_IND;
+
+val homeplug_mme_handler_run_tests = 0;
