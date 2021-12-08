@@ -1,6 +1,7 @@
 macro on_mme_cm_mnbc_sound_ind {
     evCM_MNBC_SOUND_IND(
         payload{
+            header{123;};
             application_type{
                 mme_application_type;
             };
@@ -26,6 +27,7 @@ macro on_mme_cm_mnbc_sound_ind {
 macro on_mme_cm_slac_parm_eq{
     evCM_SLAC_PARM_REQ(
         payload{
+            header{123;};
             application_type{
                 mme_application_type;
             };
@@ -42,6 +44,7 @@ macro on_mme_cm_slac_parm_eq{
 macro on_mme_cm_slac_parm_cnf{
     evCM_SLAC_PARM_CNF(
         payload{
+            header{123;};
             m_sound_target{
                 mme_m_sound_target;
             };
@@ -73,6 +76,7 @@ macro on_mme_cm_slac_parm_cnf{
 macro on_mme_cm_start_atten_char_ind{
     evCM_START_ATTEN_CHAR_IND(
         payload{
+            header{123;};
             application_type{
                 mme_application_type;
             };
@@ -101,6 +105,7 @@ macro on_mme_cm_start_atten_char_ind{
 macro on_mme_cm_mnbc_sound_ind{
  evCM_MNBC_SOUND_IND(
         payload{
+            header{123;};
             application_type{
                 mme_application_type;
             };
@@ -126,6 +131,7 @@ macro on_mme_cm_mnbc_sound_ind{
 macro on_mme_cm_atten_char_ind{
     evCM_ATTEN_CHAR_IND(
         payload{
+            header{123;};
             application_type{
                 mme_application_type;
             };
@@ -158,6 +164,7 @@ macro on_mme_cm_atten_char_ind{
 macro on_mme_cm_atten_char_rsp{
     evCM_ATTEN_CHAR_RSP(
         payload{
+            header{123;};
             application_type{
                 mme_application_type;
             };
@@ -187,6 +194,7 @@ macro on_mme_cm_atten_char_rsp{
 macro on_mme_cm_atten_profile_ind{
     evCM_ATTEN_PROFILE_IND(
         payload{
+            header{123;};
             pev_mac{
                 mme_pev_mac;
             };
@@ -203,6 +211,7 @@ macro on_mme_cm_atten_profile_ind{
 macro on_mme_cm_validate_req{
     evCM_VALIDATE_REQ(
         payload{
+            header{123;};            
             signal_type{
                 mme_signal_type;
             };
@@ -219,6 +228,7 @@ macro on_mme_cm_validate_req{
 macro on_mme_cm_validate_cnf{
     evCM_VALIDATE_CNF(
         payload{
+            header{123;};
             signal_type{
                 mme_signal_type;
             };
@@ -235,6 +245,7 @@ macro on_mme_cm_validate_cnf{
 macro on_mme_cm_slac_match_req{
     evCM_SLAC_MATCH_REQ(
         payload{
+            header{123;};
             application_type{
                 mme_application_type;
             };
@@ -266,6 +277,7 @@ macro on_mme_cm_slac_match_req{
 macro on_mme_cm_slac_match_cnf{
     evCM_SLAC_MATCH_CNF(
         payload{
+            header{123;};
             application_type{
                 mme_application_type;
             };
@@ -303,6 +315,7 @@ macro on_mme_cm_slac_match_cnf{
 macro on_mme_cm_set_key_req{
     evCM_SET_KEY_REQ(
         payload{
+            header{123;};
             key_type{
                 mme_key_type;
             };
@@ -340,6 +353,7 @@ macro on_mme_cm_set_key_req{
 macro on_mme_cm_amp_map_req{
     evCM_AMP_MAP_REQ(
         payload{
+            header{123;};
             amlen{
                 mme_amlen;
             };
@@ -353,6 +367,7 @@ macro on_mme_cm_amp_map_req{
 macro on_mme_cm_amp_map_cnf{
     evCM_AMP_MAP_CNF(
         payload{
+            header{123;};
             restype{
                 mme_restype;
             };

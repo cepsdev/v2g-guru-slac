@@ -87,3 +87,5 @@ Event   evCM_SLAC_PARM_REQ,
         evCM_ATTEN_CHAR_IND;
 
 val homeplug_mme_handler_run_tests = 0;
+val homeplug_mme_handler_sctp_port = "56800";
+val homeplug_mme_handler_as_server = 1;

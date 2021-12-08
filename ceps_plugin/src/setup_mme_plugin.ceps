@@ -10,13 +10,45 @@ macro include_homeplug_mme_handler{
 
 sm{
     map_mme_to_events;
-    states{Initial;};
+    states{ Initial;WaitForMMEPluginInitialized;MMEPluginInitialized;
+            WaitForevCM_SLAC_PARM_REQ;
+            WaitForevCM_SLAC_PARM_CNF;
+            WaitForevCM_START_ATTEN_CHAR_IND;
+            WaitForevCM_MNBC_SOUND_IND;
+            WaitForevCM_ATTEN_PROFILE_IND;
+            WaitForevCM_ATTEN_CHAR_RSP;
+            WaitForevCM_VALIDATE_REQ;
+            WaitForevCM_VALIDATE_CNF;
+            WaitForevCM_SLAC_MATCH_REQ;
+            WaitForevCM_SLAC_MATCH_CNF;
+            WaitForevCM_SET_KEY_REQ;
+            WaitForevCM_SET_KEY_CNF;
+            WaitForevCM_AMP_MAP_REQ;
+            WaitForevCM_AMP_MAP_CNF;
+            WaitForevCM_ATTEN_CHAR_IND;
+            
+            ReceivedevCM_SLAC_PARM_REQ;
+            ReceivedevCM_SLAC_PARM_CNF;
+            ReceivedevCM_START_ATTEN_CHAR_IND;
+            ReceivedevCM_MNBC_SOUND_IND;
+            ReceivedevCM_ATTEN_PROFILE_IND;
+            ReceivedevCM_ATTEN_CHAR_RSP;
+            ReceivedevCM_VALIDATE_REQ;
+            ReceivedevCM_VALIDATE_CNF;
+            ReceivedevCM_SLAC_MATCH_REQ;
+            ReceivedevCM_SLAC_MATCH_CNF;
+            ReceivedevCM_SET_KEY_REQ;
+            ReceivedevCM_SET_KEY_CNF;
+            ReceivedevCM_AMP_MAP_REQ;
+            ReceivedevCM_AMP_MAP_CNF;
+            ReceivedevCM_ATTEN_CHAR_IND;
+        };
     on_enter{
         homeplug_mme_handler( 
             setup {
                 communication{
-                    port{"56800";};
-                    as_server{1;};
+                    port{homeplug_mme_handler_sctp_port;};
+                    as_server{homeplug_mme_handler_as_server;};
                 };
                 on_initplugin{
                     evMMEPluginInitialized;
@@ -89,9 +121,340 @@ sm{
         onMMEPluginInitialized{
             print("MME Plugin ready\n");
         };
+
+        on_evCM_SLAC_PARM_REQ{
+            if( argv(1).payload.header.size() == 0){
+                send_homeplug_mme(
+                    mme{ 
+                        header{
+                            oda{1;2.5;"ABCDEF";80;90;100;110;120;130;};
+                            osa{2;4;6;8;10;12;};
+                            vlan_tag{233;};
+                            mtype{256;};
+                            mmv{257;};
+                            mmtype{CM_SLAC_PARM_REQ;};
+                            fmi{2;};
+                            fmsn{3;};
+                        };
+                        argv(1).payload; 
+                    } 
+                );
+            } else {
+                //print("ignore CM_SLAC_PARM_REQ ",argv(1),"\n");
+            }
+        };
+        //header{123;};
+         on_evCM_SLAC_PARM_CNF{
+            if( argv(1).payload.header.size() == 0){
+                send_homeplug_mme(
+                mme{ 
+                        header{
+                            oda{1;2.5;"ABCDEF";80;90;100;110;120;130;};
+                            osa{2;4;6;8;10;12;};
+                            vlan_tag{233;};
+                            mtype{256;};
+                            mmv{257;};
+                            mmtype{CM_SLAC_PARM_CNF;};
+                            fmi{2;};
+                            fmsn{3;};
+                        };
+                        argv(1).payload; 
+                } 
+                );
+            } else {
+                //print("ignore CM_SLAC_PARM_CNF ",argv(1),"\n");
+            }
+        }; on_evCM_START_ATTEN_CHAR_IND{
+            if( argv(1).payload.header.size() == 0){
+            send_homeplug_mme(
+              mme{ 
+                    header{
+                        oda{1;2.5;"ABCDEF";80;90;100;110;120;130;};
+                        osa{2;4;6;8;10;12;};
+                        vlan_tag{233;};
+                        mtype{256;};
+                        mmv{257;};
+                        mmtype{CM_START_ATTEN_CHAR_IND;};
+                        fmi{2;};
+                        fmsn{3;};
+                    };
+                    argv(1).payload; 
+              } 
+            );}
+        }; 
+        
+        on_evCM_MNBC_SOUND_IND{
+            if( argv(1).payload.header.size() == 0){
+                send_homeplug_mme(
+              mme{ 
+                    header{
+                        oda{1;2.5;"ABCDEF";80;90;100;110;120;130;};
+                        osa{2;4;6;8;10;12;};
+                        vlan_tag{233;};
+                        mtype{256;};
+                        mmv{257;};
+                        mmtype{CM_MNBC_SOUND_IND;};
+                        fmi{2;};
+                        fmsn{3;};
+                    };
+                    argv(1).payload; 
+              } 
+            );
+            }
+        }; on_evCM_ATTEN_PROFILE_IND{
+            if( argv(1).payload.header.size() == 0){
+            send_homeplug_mme(
+              mme{ 
+                    header{
+                        oda{1;2.5;"ABCDEF";80;90;100;110;120;130;};
+                        osa{2;4;6;8;10;12;};
+                        vlan_tag{233;};
+                        mtype{256;};
+                        mmv{257;};
+                        mmtype{CM_ATTEN_PROFILE_IND;};
+                        fmi{2;};
+                        fmsn{3;};
+                    };
+                    argv(1).payload; 
+              } 
+            );
+          }
+        }; 
+        on_evCM_ATTEN_CHAR_RSP{
+            if( argv(1).payload.header.size() == 0){ send_homeplug_mme(
+              mme{ 
+                    header{
+                        oda{1;2.5;"ABCDEF";80;90;100;110;120;130;};
+                        osa{2;4;6;8;10;12;};
+                        vlan_tag{233;};
+                        mtype{256;};
+                        mmv{257;};
+                        mmtype{CM_ATTEN_CHAR_RSP;};
+                        fmi{2;};
+                        fmsn{3;};
+                    };
+                    argv(1).payload; 
+              } 
+            );
+            }
+        }; on_evCM_VALIDATE_REQ{
+            if( argv(1).payload.header.size() == 0){ send_homeplug_mme(
+              mme{ 
+                    header{
+                        oda{1;2.5;"ABCDEF";80;90;100;110;120;130;};
+                        osa{2;4;6;8;10;12;};
+                        vlan_tag{233;};
+                        mtype{256;};
+                        mmv{257;};
+                        mmtype{CM_VALIDATE_REQ;};
+                        fmi{2;};
+                        fmsn{3;};
+                    };
+                    argv(1).payload; 
+              } 
+            );}
+        }; on_evCM_VALIDATE_CNF{
+            if( argv(1).payload.header.size() == 0){ send_homeplug_mme(
+              mme{ 
+                    header{
+                        oda{1;2.5;"ABCDEF";80;90;100;110;120;130;};
+                        osa{2;4;6;8;10;12;};
+                        vlan_tag{233;};
+                        mtype{256;};
+                        mmv{257;};
+                        mmtype{CM_VALIDATE_CNF;};
+                        fmi{2;};
+                        fmsn{3;};
+                    };
+                    argv(1).payload; 
+              } 
+            );}
+        }; on_evCM_SLAC_MATCH_REQ{
+            if( argv(1).payload.header.size() == 0){ send_homeplug_mme(
+              mme{ 
+                    header{
+                        oda{1;2.5;"ABCDEF";80;90;100;110;120;130;};
+                        osa{2;4;6;8;10;12;};
+                        vlan_tag{233;};
+                        mtype{256;};
+                        mmv{257;};
+                        mmtype{CM_SLAC_MATCH_REQ;};
+                        fmi{2;};
+                        fmsn{3;};
+                    };
+                    argv(1).payload; 
+              } 
+            );}
+        }; on_evCM_SLAC_MATCH_CNF{
+            if( argv(1).payload.header.size() == 0){ send_homeplug_mme(
+              mme{ 
+                    header{
+                        oda{1;2.5;"ABCDEF";80;90;100;110;120;130;};
+                        osa{2;4;6;8;10;12;};
+                        vlan_tag{233;};
+                        mtype{256;};
+                        mmv{257;};
+                        mmtype{CM_SLAC_MATCH_CNF;};
+                        fmi{2;};
+                        fmsn{3;};
+                    };
+                    argv(1).payload; 
+              } 
+            ); }
+        }; on_evCM_SET_KEY_REQ{
+            if( argv(1).payload.header.size() == 0){ send_homeplug_mme(
+              mme{ 
+                    header{
+                        oda{1;2.5;"ABCDEF";80;90;100;110;120;130;};
+                        osa{2;4;6;8;10;12;};
+                        vlan_tag{233;};
+                        mtype{256;};
+                        mmv{257;};
+                        mmtype{CM_SET_KEY_REQ;};
+                        fmi{2;};
+                        fmsn{3;};
+                    };
+                    argv(1).payload; 
+              } 
+            );}
+        }; on_evCM_SET_KEY_CNF{
+            if( argv(1).payload.header.size() == 0){send_homeplug_mme(
+              mme{ 
+                    header{
+                        oda{1;2.5;"ABCDEF";80;90;100;110;120;130;};
+                        osa{2;4;6;8;10;12;};
+                        vlan_tag{233;};
+                        mtype{256;};
+                        mmv{257;};
+                        mmtype{CM_SET_KEY_CNF;};
+                        fmi{2;};
+                        fmsn{3;};
+                    };
+                    argv(1).payload; 
+              } 
+            );}
+        }; on_evCM_AMP_MAP_REQ{
+            if( argv(1).payload.header.size() == 0){send_homeplug_mme(
+              mme{ 
+                    header{
+                        oda{1;2.5;"ABCDEF";80;90;100;110;120;130;};
+                        osa{2;4;6;8;10;12;};
+                        vlan_tag{233;};
+                        mtype{256;};
+                        mmv{257;};
+                        mmtype{CM_AMP_MAP_REQ;};
+                        fmi{2;};
+                        fmsn{3;};
+                    };
+                    argv(1).payload; 
+              } 
+            );}
+        }; on_evCM_AMP_MAP_CNF{
+            if( argv(1).payload.header.size() == 0){send_homeplug_mme(
+              mme{ 
+                    header{
+                        oda{1;2.5;"ABCDEF";80;90;100;110;120;130;};
+                        osa{2;4;6;8;10;12;};
+                        vlan_tag{233;};
+                        mtype{256;};
+                        mmv{257;};
+                        mmtype{CM_AMP_MAP_CNF;};
+                        fmi{2;};
+                        fmsn{3;};
+                    };
+                    argv(1).payload; 
+              } 
+            );}
+        }; on_evCM_ATTEN_CHAR_IND{
+            if( argv(1).payload.header.size() == 0){send_homeplug_mme(
+              mme{ 
+                    header{
+                        oda{1;2.5;"ABCDEF";80;90;100;110;120;130;};
+                        osa{2;4;6;8;10;12;};
+                        vlan_tag{233;};
+                        mtype{256;};
+                        mmv{257;};
+                        mmtype{CM_ATTEN_CHAR_IND;};
+                        fmi{2;};
+                        fmsn{3;};
+                    };
+                    argv(1).payload; 
+              } 
+            );}
+        };
+
+
+
     };
 
-    t{Initial;Initial;evMMEPluginInitialized;MMEPluginDebug;onMMEPluginInitialized;};
+    t{Initial;WaitForMMEPluginInitialized;};
+    t{Initial;WaitForevCM_SLAC_PARM_REQ;};
+    t{Initial;WaitForevCM_SLAC_PARM_CNF;};
+    t{Initial;WaitForevCM_START_ATTEN_CHAR_IND;};
+    t{Initial;WaitForevCM_MNBC_SOUND_IND;};
+    t{Initial;WaitForevCM_ATTEN_PROFILE_IND;};
+    t{Initial;WaitForevCM_ATTEN_CHAR_RSP;};
+    t{Initial;WaitForevCM_VALIDATE_REQ;};
+    t{Initial;WaitForevCM_VALIDATE_CNF;};
+    t{Initial;WaitForevCM_SLAC_MATCH_REQ;};
+    t{Initial;WaitForevCM_SLAC_MATCH_CNF;};
+    t{Initial;WaitForevCM_SET_KEY_REQ;};
+    t{Initial;WaitForevCM_SET_KEY_CNF;};
+    t{Initial;WaitForevCM_AMP_MAP_REQ;};
+    t{Initial;WaitForevCM_AMP_MAP_CNF;};
+    t{Initial;WaitForevCM_ATTEN_CHAR_IND;};
+    t{WaitForMMEPluginInitialized;MMEPluginInitialized;evMMEPluginInitialized;MMEPluginDebug;onMMEPluginInitialized;};
+
+
+    t{WaitForevCM_SLAC_PARM_REQ;WaitForevCM_SLAC_PARM_REQ;evCM_SLAC_PARM_REQ;on_evCM_SLAC_PARM_REQ;};
+    t{WaitForevCM_SLAC_PARM_CNF;WaitForevCM_SLAC_PARM_CNF;evCM_SLAC_PARM_CNF;on_evCM_SLAC_PARM_CNF;};
+    t{WaitForevCM_START_ATTEN_CHAR_IND;WaitForevCM_START_ATTEN_CHAR_IND;evCM_START_ATTEN_CHAR_IND;on_evCM_START_ATTEN_CHAR_IND;};
+    t{WaitForevCM_MNBC_SOUND_IND;WaitForevCM_MNBC_SOUND_IND;evCM_MNBC_SOUND_IND;on_evCM_MNBC_SOUND_IND;};
+    t{WaitForevCM_ATTEN_PROFILE_IND;WaitForevCM_ATTEN_PROFILE_IND;evCM_ATTEN_PROFILE_IND;;on_evCM_ATTEN_PROFILE_IND;};
+    t{WaitForevCM_ATTEN_CHAR_RSP;WaitForevCM_ATTEN_CHAR_RSP;evCM_ATTEN_CHAR_RSP;on_evCM_ATTEN_CHAR_RSP;};
+    t{WaitForevCM_VALIDATE_REQ;WaitForevCM_VALIDATE_REQ;evCM_VALIDATE_REQ;on_evCM_VALIDATE_REQ;};
+    t{WaitForevCM_VALIDATE_CNF;WaitForevCM_VALIDATE_CNF;evCM_VALIDATE_CNF;on_evCM_VALIDATE_CNF;};
+    t{WaitForevCM_SLAC_MATCH_REQ;WaitForevCM_SLAC_MATCH_REQ;evCM_SLAC_MATCH_REQ;on_evCM_SLAC_MATCH_REQ;};
+    t{WaitForevCM_SLAC_MATCH_CNF;WaitForevCM_SLAC_MATCH_CNF;evCM_SLAC_MATCH_CNF;on_evCM_SLAC_MATCH_CNF;};
+    t{WaitForevCM_SET_KEY_REQ;WaitForevCM_SET_KEY_REQ;evCM_SET_KEY_REQ;on_evCM_SET_KEY_REQ;};
+    t{WaitForevCM_SET_KEY_CNF;WaitForevCM_SET_KEY_CNF;evCM_SET_KEY_CNF;on_evCM_SET_KEY_CNF;};
+    t{WaitForevCM_AMP_MAP_REQ;WaitForevCM_AMP_MAP_REQ;evCM_AMP_MAP_REQ;on_evCM_AMP_MAP_REQ;};
+    t{WaitForevCM_AMP_MAP_CNF;WaitForevCM_AMP_MAP_CNF;evCM_AMP_MAP_CNF;on_evCM_AMP_MAP_CNF;};
+    t{WaitForevCM_ATTEN_CHAR_IND;WaitForevCM_ATTEN_CHAR_IND;evCM_ATTEN_CHAR_IND;on_evCM_ATTEN_CHAR_IND;};
+
+/*
+    t{WaitForevCM_SLAC_PARM_REQ;ReceivedevCM_SLAC_PARM_REQ;evCM_SLAC_PARM_REQ;on_evCM_SLAC_PARM_REQ;};
+    t{WaitForevCM_SLAC_PARM_CNF;ReceivedevCM_SLAC_PARM_CNF;evCM_SLAC_PARM_CNF;on_evCM_SLAC_PARM_CNF;};
+    t{WaitForevCM_START_ATTEN_CHAR_IND;ReceivedevCM_START_ATTEN_CHAR_IND;evCM_START_ATTEN_CHAR_IND;on_evCM_START_ATTEN_CHAR_IND;};
+    t{WaitForevCM_MNBC_SOUND_IND;ReceivedevCM_MNBC_SOUND_IND;evCM_MNBC_SOUND_IND;on_evCM_MNBC_SOUND_IND;};
+    t{WaitForevCM_ATTEN_PROFILE_IND;ReceivedevCM_ATTEN_PROFILE_IND;evCM_ATTEN_PROFILE_IND;;on_evCM_ATTEN_PROFILE_IND;};
+    t{WaitForevCM_ATTEN_CHAR_RSP;ReceivedevCM_ATTEN_CHAR_RSP;evCM_ATTEN_CHAR_RSP;on_evCM_ATTEN_CHAR_RSP;};
+    t{WaitForevCM_VALIDATE_REQ;ReceivedevCM_VALIDATE_REQ;evCM_VALIDATE_REQ;on_evCM_VALIDATE_REQ;};
+    t{WaitForevCM_VALIDATE_CNF;ReceivedevCM_VALIDATE_CNF;evCM_VALIDATE_CNF;on_evCM_VALIDATE_CNF;};
+    t{WaitForevCM_SLAC_MATCH_REQ;ReceivedevCM_SLAC_MATCH_REQ;evCM_SLAC_MATCH_REQ;on_evCM_SLAC_MATCH_REQ;};
+    t{WaitForevCM_SLAC_MATCH_CNF;ReceivedevCM_SLAC_MATCH_CNF;evCM_SLAC_MATCH_CNF;on_evCM_SLAC_MATCH_CNF;};
+    t{WaitForevCM_SET_KEY_REQ;ReceivedevCM_SET_KEY_REQ;evCM_SET_KEY_REQ;on_evCM_SET_KEY_REQ;};
+    t{WaitForevCM_SET_KEY_CNF;ReceivedevCM_SET_KEY_CNF;evCM_SET_KEY_CNF;on_evCM_SET_KEY_CNF;};
+    t{WaitForevCM_AMP_MAP_REQ;ReceivedevCM_AMP_MAP_REQ;evCM_AMP_MAP_REQ;on_evCM_AMP_MAP_REQ;};
+    t{WaitForevCM_AMP_MAP_CNF;ReceivedevCM_AMP_MAP_CNF;evCM_AMP_MAP_CNF;on_evCM_AMP_MAP_CNF;};
+    t{WaitForevCM_ATTEN_CHAR_IND;ReceivedevCM_ATTEN_CHAR_IND;evCM_ATTEN_CHAR_IND;on_evCM_ATTEN_CHAR_IND;};
+*/
+/*
+    t{ReceivedevCM_SLAC_PARM_REQ;WaitForevCM_SLAC_PARM_REQ;};
+    t{ReceivedevCM_SLAC_PARM_CNF;WaitForevCM_SLAC_PARM_CNF;};
+    t{ReceivedevCM_START_ATTEN_CHAR_IND;WaitForevCM_START_ATTEN_CHAR_IND;};
+    t{ReceivedevCM_MNBC_SOUND_IND;WaitForevCM_MNBC_SOUND_IND;};
+    t{ReceivedevCM_ATTEN_PROFILE_IND;WaitForevCM_ATTEN_PROFILE_IND;};
+    t{ReceivedevCM_ATTEN_CHAR_RSP;WaitForevCM_ATTEN_CHAR_RSP;};
+    t{ReceivedevCM_VALIDATE_REQ;WaitForevCM_VALIDATE_REQ;};
+    t{ReceivedevCM_VALIDATE_CNF;WaitForevCM_VALIDATE_CNF;};
+    t{ReceivedevCM_SLAC_MATCH_REQ;WaitForevCM_SLAC_MATCH_REQ;};
+    t{ReceivedevCM_SLAC_MATCH_CNF;WaitForevCM_SLAC_MATCH_CNF;};
+    t{ReceivedevCM_SET_KEY_REQ;WaitForevCM_SET_KEY_REQ;};
+    t{ReceivedevCM_SET_KEY_CNF;WaitForevCM_SET_KEY_CNF;};
+    t{ReceivedevCM_AMP_MAP_REQ;WaitForevCM_AMP_MAP_REQ;};
+    t{ReceivedevCM_AMP_MAP_CNF;WaitForevCM_AMP_MAP_CNF;};
+    t{ReceivedevCM_ATTEN_CHAR_IND;WaitForevCM_ATTEN_CHAR_IND;}; */
 };
 };
 

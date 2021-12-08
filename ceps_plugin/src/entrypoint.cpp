@@ -137,6 +137,37 @@ static ceps::ast::node_t plugin_entrypoint_route_mme(ceps::ast::node_callparamet
         plugn.last_client = *(sockaddr_in*)res->ai_addr;
         plugn.last_client_len = res->ai_addrlen;
       }
+        std::thread reader_thread {
+        [=]()
+        {
+            //on_exit_cleanup on_exit{ [&] {if (addrinfo_res != nullptr) freeaddrinfo(addrinfo_res);}};
+            socklen_t len = it->ai_addrlen;
+            char readbuf[2048];
+            for(;;){
+                sockaddr_in client {0};
+                len = sizeof(sockaddr_in);
+                sctp_sndrcvinfo sndrcvinfo{0};
+                memset(&client,0,sizeof(client));
+                memset(&sndrcvinfo,0,sizeof(sndrcvinfo));
+                int msg_flags{}; 
+                auto rd_sz = sctp_recvmsg(plugn.commfd,readbuf,sizeof(readbuf),(sockaddr*)&client,&len,&sndrcvinfo,&msg_flags);
+                if (rd_sz > 0)
+                {
+                    {
+                        std::lock_guard g{plugn.commfd_mtx};
+                        plugn.last_client = client;
+                        plugn.last_client_len = len;
+                    } 
+                    plugn.handle_homeplug_mme( (homeplug_mme_generic*) readbuf,rd_sz);
+                }
+            }
+        }
+    };
+
+    reader_thread.detach();
+      
+
+
     }
         
     if (ceps::ast::Nodeset{t}["setup"]["run_tests"].nodes().size()){
