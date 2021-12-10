@@ -51,36 +51,78 @@ gInsistOnValidationIfEVSEsFound = 1;
 gDontInsistOnValidationIfEVSEsFound = !gInsistOnValidationIfEVSEsFound;
 
 Systemstate validate_evses;
-
 Systemstate validation_evse_ctr,validation_evses;
 Guard gEvseForValidationLeft;
 Guard gNoEvseForValidationLeft;
 gEvseForValidationLeft = validation_evse_ctr > validation_evses;
 gNoEvseForValidationLeft = !gEvseForValidationLeft;
 
+Systemstate validation_step_1_send_val_req_ctr;
+Guard gValidationStep1RetrySendValReq, gNoValidationStep1RetrySendValReq;
+gValidationStep1RetrySendValReq = validation_step_1_send_val_req_ctr < C_EV_match_retry + 1;
+gNoValidationStep1RetrySendValReq = !gValidationStep1RetrySendValReq;
+
 macro Validation{
     Event evValidationStep2;
     sm{
         Validation;
-        states{Initial;};
+        states{Initial;Done;};
         on_enter{
-            if (debug_output) print("[Validation] Number of EVSEs to validate: ",validate_evses.size(),"\n");
+            if (debug_output){ 
+                print("[Validation] Number of EVSEs to validate: ",validate_evses.size(),"\n");
+                print("[Validation] validate_evses = ",validate_evses,"\n");
+            }
+
             validation_evse_ctr = 0;
             validation_evses = validate_evses.size();
         };
         sm{
             Step_1;
+            label V2G3_A09_62 title = "[V2G3-A09-62]";
+            label V2G3_A09_63 title = "[V2G3-A09-63]";
             states{ Initial;
                     SendCM_VALIDATE_REQ;
-                    WaitForCM_VALIDATE_CNF;};
+                    WaitForCM_VALIDATE_CNF;
+                    ReceivedCM_VALIDATE_CNF;
+                    NoRetriesLeft;
+                    NoEvseLeft;
+                    };
             on_enter{
                 if (debug_output) print("[Validation][Step_1] EVSE: ",validate_evses.at(validation_evse_ctr),"\n");
-                {
-                    
-                }
-
+                validation_step_1_send_val_req_ctr = 0;
             };
-            
+            Actions{
+                doSendCM_VALIDATE_REQ{
+                    {
+                        
+                        validation_step_1_send_val_req_ctr = validation_step_1_send_val_req_ctr + 1;
+                        evCM_VALIDATE_REQ(
+                            payload{
+                                unicast_addr{validate_evses.at(validation_evse_ctr);};
+                                signal_type{0 # "PEV S2 toggles on control pilot line.";}; 
+                                timer{0 # "In the first VALIDATE Reuest-Response exchange, the timer field is zero.";};
+                                result{1 # "ready";};
+                            }
+                        );
+                        start_timer(TT_match_response,evTT_match_response_timeout,TT_match_response_timer);
+                        //start_timer(TT_match_response * 1.5, evCM_VALIDATE_CNF);//DEBUG STATEMENT - REMOVE                    
+                    }
+                };
+                doUpdateEVSECounter{
+                    validation_evse_ctr = validation_evse_ctr + 1;                    
+                };
+                doKillTT_match_response_timer{
+                    kill_timer(TT_match_response_timer);
+                };
+            };
+            t{Initial;SendCM_VALIDATE_REQ;doSendCM_VALIDATE_REQ;};
+            t{SendCM_VALIDATE_REQ;WaitForCM_VALIDATE_CNF;};
+            t{WaitForCM_VALIDATE_CNF;Initial;evTT_match_response_timeout;gValidationStep1RetrySendValReq;};
+            t{WaitForCM_VALIDATE_CNF;NoRetriesLeft;evTT_match_response_timeout;gNoValidationStep1RetrySendValReq;doUpdateEVSECounter;};
+            t{NoRetriesLeft;Initial;gEvseForValidationLeft;};
+            t{NoRetriesLeft;NoEvseLeft;gNoEvseForValidationLeft;};
+
+            t{WaitForCM_VALIDATE_CNF;ReceivedCM_VALIDATE_CNF;evCM_VALIDATE_CNF;doKillTT_match_response_timer;};
         };
         sm{
             Step_2;
@@ -88,10 +130,28 @@ macro Validation{
         };
 
         t{Initial;Step_1;};
+        t{Step_1.NoEvseLeft;Done;};
         t{Step_1;Step_2;evValidationStep2;};
 
     };
 };
+/*
+sm
+{
+  checkevCM_VALIDATE_REQ;
+      cover{
+        edges_upto_1;
+    };
+
+  states{Initial;evCM_VALIDATE_REQOccured;};
+  Actions{
+      printit{
+          print("======> ",argv(1));
+      };
+  };
+  t{Initial;evCM_VALIDATE_REQOccured;evCM_VALIDATE_REQ; printit;};
+};
+*/
 
 
 sm{
@@ -340,7 +400,8 @@ sm{
                                 }
                             };
                         }
-                        if(debug_output)print("**** Known EVSEs after update:\n", known_evses,"\n");
+                        if(debug_output)
+                            print("[CollectConfirmations] known_evses = ", known_evses,"\n");
                         if (evse_found || already_inserted){
                             potential_evses_found = 1;
                             gEVSEs_were_found = 1;
@@ -361,6 +422,7 @@ sm{
     t{SLACFailed;ParameterExchange;doStartSLACRetry;};
     t{ParameterExchange;SLACFailedTotally;evTT_matching_repetition_timeout;};
     t{SignalStrengthMeasurement;SLACFailedTotally;evTT_matching_repetition_timeout;};
+    
     label V2G3_A09_48 title="[V2G3-A09-48]";
     t{SignalStrengthMeasurement.MakeSounds.CollectConfirmations.PotentialEVSEFound;Validation;gInsistOnValidationIfEVSEsFound;};
     t{SignalStrengthMeasurement.MakeSounds.CollectConfirmations.PotentialEVSEFound;SkipValidation;gDontInsistOnValidationIfEVSEsFound;};
