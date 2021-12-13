@@ -1,0 +1,31 @@
+kind Event;kind Systemstate;kind Guard;
+
+Guard gControlPilotWireMeasureB, gControlPilotWireMeasureC,gControlPilotWireMeasureUnknownState;
+
+Systemstate ControlPilotWireMeasure;
+
+gControlPilotWireMeasureB = ControlPilotWireMeasure >= 9.0 && ControlPilotWireMeasure <= 12.0;
+
+gControlPilotWireMeasureC = ControlPilotWireMeasure >= 6.0 && ControlPilotWireMeasure <= 8.0;
+
+gControlPilotWireMeasureUnknownState = !gControlPilotWireMeasureC && !gControlPilotWireMeasureB;
+
+sm{
+ controlpilot;
+ states{Initial;C;B;Unknown;};
+
+ t{Initial;B;gControlPilotWireMeasureB;};
+ t{Initial;C;gControlPilotWireMeasureC;};
+ t{Initial;Unknown;gControlPilotWireMeasureUnknownState;};
+
+ t{B;C;gControlPilotWireMeasureC;};
+ t{B;Unknown;gControlPilotWireMeasureC;gControlPilotWireMeasureUnknownState;};
+
+ t{C;B;gControlPilotWireMeasureB;};
+ t{C;Unknown;gControlPilotWireMeasureC;gControlPilotWireMeasureUnknownState;};
+
+ t{Unknown;B;gControlPilotWireMeasureB;};
+ t{Unknown;C;gControlPilotWireMeasureC;};
+};
+
+ControlPilotWireMeasure = 0.0;

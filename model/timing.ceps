@@ -1,6 +1,63 @@
 val time_scale = 1.0;
 
 
+label V2G3_M08_01 title = "[V2G3-M08-01] all low-layer communication devices shall comply with [V2G3-M08-01-table-3].";
+
+label V2G3_M08_01_table_3 title = "[V2G3-M08-01-table-3] Table 3 - Timing and Constant values";
+
+label V2G3_M08_01_table_3_1 title = "[V2G3-M08-01-table-3-1] Number of retries of matching process.";
+val C_conn_max_match = 3;
+
+label V2G3_M08_01_table_3_2 title = "[V2G3-M08-01-table-3-2] Number of BCB-Toggles.";
+val C_EV_vald_nb_toggles = 3;
+
+label V2G3_M08_01_table_3_3 title = "[V2G3-M08-01-table-3-3] Number of parallel matching processes to be handled by EVSE.";
+val C_EVSE_match_parallel = 5;
+
+label V2G3_M08_01_table_3_4 title = "[V2G3-M08-01-table-3-4] Number of matching retries by Control Pilot state E transitions.";
+val C_sequ_retry = 2;
+
+label V2G3_M08_01_table_3_5 title = "[V2G3-M08-01-table-3-5] Minimum B state duration after a state F,D, or C.";
+val T_conn_init_HLC = time_scale*0.2*s;
+Event evT_conn_init_HLC;
+
+label V2G3_M08_01_table_3_6 title = "[V2G3-M08-01-table-3-6] Time after the wake up trigger (e.g. BCB-Toggle) until the lowlayer communication module is ready for communication.";
+val T_conn_resume = time_scale*6.0*s;
+Event evT_conn_resume;
+
+label V2G3_M08_01_table_3_7 title = "[V2G3-M08-01-table-3-7] Time after plug-in until lowlayer communication module is ready for communication.";
+val T_conn_max_comm = time_scale*8.0*s;
+Event evT_conn_max_comm;
+
+label V2G3_M08_01_table_3_8 title = "[V2G3-M08-01-table-3-8] Time to resetup the matching process after a loss of communication.";
+val T_conn_resetup = time_scale*15.0*s;
+Event evT_conn_resetup;
+
+label V2G3_M08_01_table_3_9 title = "[V2G3-M08-01-table-3-9] Time to detect a variation of the state on EVSE side.";
+val T_vald_detect_time = time_scale*0.2*s;
+Event evT_vald_detect_time;
+
+label V2G3_M08_01_table_3_10 title = "[V2G3-M08-01-table-3-10] Duration of each state B or C within the BCB-Toggle.";
+val TP_EV_vald_state_duration = time_scale*0.2*s;
+Event evTP_EV_vald_state_duration;
+
+label V2G3_M08_01_table_3_11 title = "[V2G3-M08-01-table-3-11] Duration of BCB-Toggle sequence.";
+val TP_EV_vald_toggle = time_scale*0.6*s;
+Event evTP_EV_vald_toggle_timeout;
+
+label V2G3_M08_01_table_3_12 title = "[V2G3-M08-01-table-3-12] Timeout timer for the EVSE to stop monitoring control pilot for BCB-Toggle Value comes from CM_VALIDATE.REQ.";
+val TP_EVSE_vald_toggle = time_scale*3.5*s;
+Event evTP_EVSE_vald_toggle_timeout;
+
+label V2G3_M08_01_table_3_13 title = "[V2G3-M08-01-table-3-13] Maximum time to leave the logical network.";
+val TP_match_leave = time_scale*1.0*s;
+Event evTP_match_leave_timeout;
+
+label V2G3_M08_01_table_3_14 title = "[V2G3-M08-01-table-3-14] Time to stay at E/F state.";
+val T_step_EF = time_scale*4.0*s;
+Event evT_step_EF_timeout;
+
+
 label V2G3_A08_01 title = "Timings and Constants";
 
 label table_a_1_1 title = "Number of M-Sounds sent for the SLAC.";

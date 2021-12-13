@@ -62,10 +62,16 @@ Guard gValidationStep1RetrySendValReq, gNoValidationStep1RetrySendValReq;
 gValidationStep1RetrySendValReq = validation_step_1_send_val_req_ctr < C_EV_match_retry + 1;
 gNoValidationStep1RetrySendValReq = !gValidationStep1RetrySendValReq;
 
+macro cm_validate_cnf_step_1_valid_and_ready{
+ msg_to_check.payload.result.content() == 1 && msg_to_check.payload.signal_type.content() == 0 && msg_to_check.payload.toggle_num.content() == 0;
+};                    
+
 macro Validation{
     Event evValidationStep2;
     sm{
         Validation;
+        Event evCM_VALIDATE_CNF_CheckFailed,evCM_VALIDATE_CNF_CheckSucceededEvseReady;
+
         states{Initial;Done;};
         on_enter{
             if (debug_output){ 
@@ -86,6 +92,9 @@ macro Validation{
                     ReceivedCM_VALIDATE_CNF;
                     NoRetriesLeft;
                     NoEvseLeft;
+                    Valid_CM_VALIDATE_CNF_Received;
+                    Valid_CM_VALIDATE_CNF_ReceivedEvseReady;
+                    ReadyForStep2;
                     };
             on_enter{
                 if (debug_output) print("[Validation][Step_1] EVSE: ",validate_evses.at(validation_evse_ctr),"\n");
@@ -105,7 +114,7 @@ macro Validation{
                             }
                         );
                         start_timer(TT_match_response,evTT_match_response_timeout,TT_match_response_timer);
-                        //start_timer(TT_match_response * 1.5, evCM_VALIDATE_CNF);//DEBUG STATEMENT - REMOVE                    
+                        start_timer(TT_match_response * 1.5, evCM_VALIDATE_CNF(payload{signal_type{0;};toggle_num{0;};result{1 # "Ready";};}) );//DEBUG STATEMENT - REMOVE                    
                     }
                 };
                 doUpdateEVSECounter{
@@ -113,6 +122,13 @@ macro Validation{
                 };
                 doKillTT_match_response_timer{
                     kill_timer(TT_match_response_timer);
+                };
+                doCheckValidity{
+                    val msg_to_check = argv(1);
+                    if ( cm_validate_cnf_step_1_valid_and_ready() == 1 ){ //BUG in cepS!!
+                        evCM_VALIDATE_CNF_CheckSucceededEvseReady;
+                    } 
+
                 };
             };
             t{Initial;SendCM_VALIDATE_REQ;doSendCM_VALIDATE_REQ;};
@@ -122,17 +138,50 @@ macro Validation{
             t{NoRetriesLeft;Initial;gEvseForValidationLeft;};
             t{NoRetriesLeft;NoEvseLeft;gNoEvseForValidationLeft;};
 
-            t{WaitForCM_VALIDATE_CNF;ReceivedCM_VALIDATE_CNF;evCM_VALIDATE_CNF;doKillTT_match_response_timer;};
+            t{WaitForCM_VALIDATE_CNF;
+              ReceivedCM_VALIDATE_CNF;
+              evCM_VALIDATE_CNF;
+              doCheckValidity;
+            };
+            t{ ReceivedCM_VALIDATE_CNF;
+               Valid_CM_VALIDATE_CNF_ReceivedEvseReady;
+               evCM_VALIDATE_CNF_CheckSucceededEvseReady;
+               doKillTT_match_response_timer;};
+            t{Valid_CM_VALIDATE_CNF_ReceivedEvseReady; ReadyForStep2;};
+
         };
+
         sm{
             Step_2;
-            states{Initial;};
+            states{Initial;SendCM_VALIDATE_REQ;SetToggleTimer;};
+            Actions{
+                doSendCM_VALIDATE_REQ{
+                    {
+                        evCM_VALIDATE_REQ(
+                            payload{
+                                unicast_addr{validate_evses.at(validation_evse_ctr);};
+                                signal_type{0 # "PEV S2 toggles on control pilot line.";}; 
+                                timer{0;};
+                                result{1 # "ready";};
+                        });
+                    }
+                };
+                doSetToggleTimer{
+                    set_timer(TP_EV_vald_toggle,evTP_EV_vald_toggle_timeout,TP_EV_vald_toggle_timer);
+                };
+            };
+            t{Initial;SendCM_VALIDATE_REQ;doSendCM_VALIDATE_REQ;};
+            t{SendCM_VALIDATE_REQ;SetToggleTimer;doSetToggleTimer;};
+            t{SetToggleTimer;BCBToggle;};
+            sm{
+                BCBToggle;
+                states{Initial;};
+            };            
         };
 
         t{Initial;Step_1;};
         t{Step_1.NoEvseLeft;Done;};
-        t{Step_1;Step_2;evValidationStep2;};
-
+        t{Step_1.ReadyForStep2;Step_2;};
     };
 };
 /*
