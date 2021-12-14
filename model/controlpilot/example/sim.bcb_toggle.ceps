@@ -1,3 +1,48 @@
+
+
+sm{
+ signal_generator_controlpilot;
+    
+    Event evNextStep;
+    states{Initial;
+        for(i : 1 .. toggles ){
+            as_identifier("B"+i);
+            as_identifier("C"+i);
+        }
+        Finished; 
+    };
+
+    Actions{
+        setStateB{ ControlPilotWireMeasure = 9.0;start_timer(time_delta,evNextStep);};
+        setStateC{ ControlPilotWireMeasure = 6.0;start_timer(time_delta,evNextStep);};
+    };
+
+    t{Initial;B1;setStateB;};
+
+    for(i : 1 .. toggles - 1 ){
+        t{
+            as_identifier("B"+i);
+            as_identifier("C"+i);
+            evNextStep;
+            setStateC;};
+        t{
+            as_identifier("C"+i);
+            as_identifier("B"+(i+1));
+            evNextStep;
+            setStateB;};
+    }
+    t{as_identifier("B"+toggles); Finished;};
+};
+
+//ControlPilotWireMeasure
+
+
 Simulation{
- Start{controlpilot;};
+ Start{controlpilot;signal_generator_controlpilot;ControlPilotObserver;};
+ 
+ start_timer(time_delta*2,evControlPilotObserverStart);
+ start_timer(time_delta*6,evControlPilotObserverStop);
+ start_timer(time_delta*10,evControlPilotObserverStart);
+ start_timer(20.0*s,evControlPilotObserverStop);
+
 };

@@ -1,4 +1,7 @@
 kind Event;kind Systemstate;kind Guard;
+val time_scale = 4;
+val toggles = 10;
+val time_delta = time_scale*0.2*s;
 
 Guard gControlPilotWireMeasureB, gControlPilotWireMeasureC,gControlPilotWireMeasureUnknownState;
 

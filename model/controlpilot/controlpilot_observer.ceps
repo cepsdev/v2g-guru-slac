@@ -1,0 +1,52 @@
+Systemstate sample_ctr;
+Event evSample;
+val ctlpilot_sampling_threshold = 10;
+Event evControlPilotObserverStart;
+Event evControlPilotObserverStop;
+
+sm{
+    ControlPilotObserver;
+    sm{
+        Observe;
+        states{Initial;Unknown;UnknownC;UnknownB;C;B;};
+        on_enter{
+            {
+                sample_ctr = 0;
+                start_periodic_timer(0.01*s,evSample,ControlPilotObserverSamplingTimer);
+            }
+        };
+        on_exit{
+            kill_timer(ControlPilotObserverSamplingTimer);
+        };
+        Actions{
+            doIncrementSampleCtr{
+                sample_ctr = sample_ctr + 1;
+            };
+            doResetIncrementSampleCtr{
+                sample_ctr = 0;
+            };
+        };
+        t{Initial;UnknownB;evSample;gControlPilotWireMeasureB;};
+        t{Initial;UnknownC;evSample;gControlPilotWireMeasureC;};
+        t{Initial;Unknown;evSample;gControlPilotWireMeasureUnknownState;};
+
+        t{UnknownB;UnknownB;evSample;gControlPilotWireMeasureB && (sample_ctr <= ctlpilot_sampling_threshold) ;doIncrementSampleCtr;};
+        t{UnknownB;B;evSample;gControlPilotWireMeasureB && (sample_ctr > ctlpilot_sampling_threshold) ;};
+        t{B;B;evSample;gControlPilotWireMeasureB;};
+        t{B;UnknownC;evSample;gControlPilotWireMeasureC;doResetIncrementSampleCtr;};
+        t{B;Unknown;evSample;gControlPilotWireMeasureUnknownState;doResetIncrementSampleCtr;};
+
+        t{UnknownC;UnknownC;evSample;gControlPilotWireMeasureC && (sample_ctr <= ctlpilot_sampling_threshold) ;doIncrementSampleCtr;};
+        t{UnknownC;C;evSample;gControlPilotWireMeasureC && (sample_ctr > ctlpilot_sampling_threshold) ;};
+        t{C;C;evSample;gControlPilotWireMeasureC;};
+        t{C;UnknownB;evSample;gControlPilotWireMeasureB;doResetIncrementSampleCtr;};
+        t{C;Unknown;evSample;gControlPilotWireMeasureUnknownState;doResetIncrementSampleCtr;};
+
+        t{Unknown;Unknown;evSample;gControlPilotWireMeasureUnknownState;};
+        t{Unknown;UnknownB;evSample;gControlPilotWireMeasureB;};
+        t{Unknown;UnknownC;evSample;gControlPilotWireMeasureC;};
+    };
+    states{Initial;};
+    t{Initial;Observe;evControlPilotObserverStart;};
+    t{Observe;Initial;evControlPilotObserverStop;};
+};
