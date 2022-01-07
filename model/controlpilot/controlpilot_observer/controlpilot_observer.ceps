@@ -1,0 +1,149 @@
+
+gControlPilotObserverMeasure_B_ButNotLongEnough = 
+ gControlPilotWireMeasureB && (ControlPilotObserver_CountOfConsecutiveConstantMeasurements < ControlPilotObserver_DetectStateThreshold) ;
+
+gControlPilotObserverMeasure_B_LongEnough = 
+ gControlPilotWireMeasureB && (ControlPilotObserver_CountOfConsecutiveConstantMeasurements >= ControlPilotObserver_DetectStateThreshold) ;
+
+gControlPilotObserverMeasure_C_ButNotLongEnough = 
+ gControlPilotWireMeasureC && (ControlPilotObserver_CountOfConsecutiveConstantMeasurements < ControlPilotObserver_DetectStateThreshold) ;
+
+gControlPilotObserverMeasure_C_LongEnough = 
+ gControlPilotWireMeasureC && (ControlPilotObserver_CountOfConsecutiveConstantMeasurements >= ControlPilotObserver_DetectStateThreshold) ;
+
+
+sm{
+    ControlPilotObserver;
+    sm{
+        Observe;
+        states{ Initial;
+                Unknown;
+                UnknownC;
+                UnknownB;
+                C;
+                B;
+            };
+            
+        on_enter{
+            {
+                ControlPilotObserver_CountOfConsecutiveConstantMeasurements = 0;
+                if (!ControlPilotObserver_ExternallyGeneratedSamplingEvents) 
+                 start_periodic_timer(ControlPilotObserver_SamplingDelta,evControlPilotObserver_Measure,ControlPilotObserverSamplingTimer);
+            }
+        };
+        on_exit{
+            kill_timer(ControlPilotObserverSamplingTimer);
+        };
+        Actions{
+            doIncrementSampleCtr{
+                ControlPilotObserver_CountOfConsecutiveConstantMeasurements = ControlPilotObserver_CountOfConsecutiveConstantMeasurements + 1;
+            };
+            doResetIncrementSampleCtr{
+                ControlPilotObserver_CountOfConsecutiveConstantMeasurements = 0;
+            };
+        };
+        t{  Initial;
+            UnknownB;
+            gControlPilotWireMeasureB;
+        };
+        t{  Initial;
+            UnknownC;
+            gControlPilotWireMeasureC
+        ;};
+        t{  Initial;
+            Unknown;
+            gControlPilotWireMeasureUnknownState;
+        };
+
+        t{  UnknownB;
+            UnknownB;
+            evControlPilotObserver_Measure;
+            gControlPilotObserverMeasure_B_ButNotLongEnough;
+            doIncrementSampleCtr;
+        };
+        t{  UnknownB;
+            B;
+            evControlPilotObserver_Measure;
+            gControlPilotObserverMeasure_B_LongEnough;
+        };
+        t{  B;
+            B;
+            evControlPilotObserver_Measure;
+            gControlPilotWireMeasureB;
+        };
+        t{  B;
+            UnknownC;
+            evControlPilotObserver_Measure;
+            gControlPilotWireMeasureC;
+            doResetIncrementSampleCtr;
+        };
+        t{  B;
+            Unknown;
+            evControlPilotObserver_Measure;
+            gControlPilotWireMeasureUnknownState;
+            doResetIncrementSampleCtr;
+        };
+
+        t{
+            UnknownC;
+            UnknownC;
+            evControlPilotObserver_Measure;
+            gControlPilotObserverMeasure_C_ButNotLongEnough ;
+            doIncrementSampleCtr;
+        };
+        t{  UnknownC;
+            C;
+            evControlPilotObserver_Measure;
+            gControlPilotObserverMeasure_C_LongEnough ;
+        };
+        t{  C;
+            C;
+            evControlPilotObserver_Measure;
+            gControlPilotWireMeasureC;
+        };
+        t{  C;
+            UnknownB;
+            evControlPilotObserver_Measure;
+            gControlPilotWireMeasureB;
+            doResetIncrementSampleCtr;
+        };
+        t{  C;
+            Unknown;
+            evControlPilotObserver_Measure;
+            gControlPilotWireMeasureUnknownState;
+            doResetIncrementSampleCtr;
+        };
+
+        t{  Unknown;
+            Unknown;
+            evControlPilotObserver_Measure;
+            gControlPilotWireMeasureUnknownState;
+        };
+        
+        t{  Unknown;
+            UnknownB;
+            evControlPilotObserver_Measure;
+            gControlPilotWireMeasureB;
+        };
+        
+        t{  Unknown;
+            UnknownC;
+            evControlPilotObserver_Measure;
+            gControlPilotWireMeasureC;
+        };
+    };
+
+    states{Initial;Wait;};
+    
+    t{Initial; Wait;};
+
+    t{  Wait;
+        Observe;
+        evControlPilotObserverStart;
+    };
+
+    t{  Observe;
+        Wait;
+        evControlPilotObserverStop;
+    };
+};

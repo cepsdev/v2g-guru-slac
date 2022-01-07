@@ -3,4 +3,4 @@
 
 
 
-![](../img/ev.svg)
+![](/home/tomas/dev/v2g-guru-slac/img/ev.svg)

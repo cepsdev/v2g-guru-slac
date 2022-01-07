@@ -1,0 +1,17 @@
+kind Systemstate;
+kind Event;
+kind Guard;
+
+Systemstate ControlPilotObserver_CountOfConsecutiveConstantMeasurements,
+            ControlPilotObserver_DetectStateThreshold,
+            ControlPilotObserver_SamplingDelta,
+            ControlPilotObserver_ExternallyGeneratedSamplingEvents;
+
+Event evControlPilotObserver_Measure;
+Event evControlPilotObserverStart;
+Event evControlPilotObserverStop;
+
+Guard gControlPilotObserverMeasure_B_ButNotLongEnough, gControlPilotObserverMeasure_B_LongEnough;
+Guard gControlPilotObserverMeasure_C_ButNotLongEnough, gControlPilotObserverMeasure_C_LongEnough;
+
+ControlPilotObserver_ExternallyGeneratedSamplingEvents = 0;

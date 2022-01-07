@@ -1,0 +1,11 @@
+ControlPilotObserver_ExternallyGeneratedSamplingEvents = 1;
+ControlPilotObserver_DetectStateThreshold = 2;
+ControlPilotWireMeasure = ControlPilotStateBMin + as_int((ControlPilotStateBMax - ControlPilotStateBMin)/2);
+
+Simulation{
+    Start{ControlPilotObserver;};
+    evControlPilotObserverStart;
+    evControlPilotObserver_Measure;
+    evControlPilotObserver_Measure;
+    evControlPilotObserver_Measure;
+};

@@ -1,17 +1,15 @@
-kind Event;kind Systemstate;kind Guard;
-val time_scale = 4;
+kind Event;
+kind Systemstate;
+kind Guard;
+
 val toggles = 10;
 val time_delta = time_scale*0.2*s;
 
-Guard gControlPilotWireMeasureB, gControlPilotWireMeasureC,gControlPilotWireMeasureUnknownState;
 
-Systemstate ControlPilotWireMeasure;
-
-gControlPilotWireMeasureB = ControlPilotWireMeasure >= 9.0 && ControlPilotWireMeasure <= 12.0;
-
-gControlPilotWireMeasureC = ControlPilotWireMeasure >= 6.0 && ControlPilotWireMeasure <= 8.0;
-
-gControlPilotWireMeasureUnknownState = !gControlPilotWireMeasureC && !gControlPilotWireMeasureB;
+label V2G3_M06_01 title="[V2G3-M06-01] The basic signalling follows [IEC-1]. All timings shall be compliant with the [IEC-1], Annex A.\
+\
+ Any Charging process, no matter the presence of high-level communication, uses the bidirectional signalling according to [IEC-1],\
+ indicating EV related information through control pilot states and EVSE related information through the duty cycle of the control pilot signal.";
 
 sm{
  controlpilot;
@@ -30,5 +28,3 @@ sm{
  t{Unknown;B;gControlPilotWireMeasureB;};
  t{Unknown;C;gControlPilotWireMeasureC;};
 };
-
-ControlPilotWireMeasure = 0.0;

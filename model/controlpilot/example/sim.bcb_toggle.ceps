@@ -1,4 +1,5 @@
-
+ControlPilotObserver_SamplingDelta = T_vald_detect_time / 10.0;
+ControlPilotObserver_DetectStateThreshold =   as_int(T_vald_detect_time/ControlPilotObserver_SamplingDelta);
 
 sm{
  signal_generator_controlpilot;
@@ -36,9 +37,28 @@ sm{
 
 //ControlPilotWireMeasure
 
+Guard gBObserved;
+Guard gCObserved;
+gBObserved = in_state(ControlPilotObserver.Observe.B);
+//gCObserved = in_state(ControlPilotObserver.Observe.C);
+sm{
+    SS;
+    states{Initial;};
+    Actions{
+     doCheck{
+            if (in_state(ControlPilotObserver.Observe.B)){
+                //print("ABA\n");
+            } else {
+                //print("?????\n");
+            }
+        };
+    };
+    t{Initial;Initial;evControlPilotObserver_Measure;doCheck;};
+
+};
 
 Simulation{
- Start{controlpilot;signal_generator_controlpilot;ControlPilotObserver;};
+ Start{controlpilot;signal_generator_controlpilot;ControlPilotObserver;SS;};
  
  start_timer(time_delta*2,evControlPilotObserverStart);
  start_timer(time_delta*6,evControlPilotObserverStop);
