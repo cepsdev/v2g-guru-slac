@@ -6,12 +6,13 @@ ControlPilotObserver_ExternallyGeneratedSamplingEvents = 1<br/>ControlPilotObser
 ### [Simulation] ControlPilotObserver 'observes' a state.
 
 #### Steps
-&nbsp;`Start` state machine *ControlPilotObserver* .<br/>&nbsp;`Trigger Event` *evControlPilotObserverStart* .<br/>&nbsp;`Trigger Event` *evControlPilotObserver_Measure* .<br/>&nbsp;`Trigger Event` *evControlPilotObserver_Measure* .<br/>
+&nbsp;`Start` state machine *ControlPilotObserver* .<br/>&nbsp;`Trigger Event` *evControlPilotObserverStart* .<br/>&nbsp;`Trigger Event` *evControlPilotObserver_Measure* .<br/>&nbsp;`Trigger Event` *evControlPilotObserver_Measure* .<br/>&nbsp;`Trigger Event` *evControlPilotObserver_Measure* .<br/>
 #### Result
 ```javascript
 ControlPilotObserver.Initial- ControlPilotObserver.Wait+ 
 ControlPilotObserver.Wait- ControlPilotObserver.Observe+ ControlPilotObserver.Observe.Initial+ 
 ControlPilotObserver.Observe.Initial- ControlPilotObserver.Observe.UnknownB+ 
+ControlPilotObserver.Observe.UnknownB- ControlPilotObserver.Observe.B+ 
 ```
 
 #### How to run this simulation from the shell

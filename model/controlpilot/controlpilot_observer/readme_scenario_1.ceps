@@ -21,7 +21,7 @@ Simulation{
     evControlPilotObserverStart;
     evControlPilotObserver_Measure;
     evControlPilotObserver_Measure;
-    //evControlPilotObserver_Measure;
+    evControlPilotObserver_Measure;
 };
 
 
