@@ -1,0 +1,21 @@
+docgen_parameters{
+    kind Docgenparam;
+    Docgenparam heading_level;
+    heading_level = 2;
+};
+
+kind Systemstate;
+kind Event;
+Event evControlPilotObserver_Measure,evControlPilotObserverStart,evControlPilotObserverStop;
+Systemstate ControlPilotObserver_ExternallyGeneratedSamplingEvents;
+Systemstate ControlPilotObserver_DetectStateThreshold;
+Systemstate ControlPilotWireMeasure;
+
+Simulation{
+    title{ControlPilotObserver;" needs a trigger to start/stop  'observing' .";};
+    Start{ControlPilotObserver;};
+    evControlPilotObserverStart;
+    evControlPilotObserverStop;
+};
+
+

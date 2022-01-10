@@ -15,3 +15,4 @@ Guard gControlPilotObserverMeasure_B_ButNotLongEnough, gControlPilotObserverMeas
 Guard gControlPilotObserverMeasure_C_ButNotLongEnough, gControlPilotObserverMeasure_C_LongEnough;
 
 ControlPilotObserver_ExternallyGeneratedSamplingEvents = 0;
+ControlPilotObserver_SamplingDelta = 0.1*s;

@@ -6,7 +6,7 @@ PIC="img/controlpilot_observer.svg"
 cat >> README.md << EOF
 ![]($PIC)
 
-## Simulations
+## Examples
 
 EOF
 ceps readme_scenario_1.ceps --pe --format markdown_github --ignore_simulations >> README.md
@@ -23,10 +23,55 @@ EOF
 
 cat >> README.md << EOF
 
-#### How to run this simulation from the shell
+#### How to run this example from the shell
 \`\`\`bash
 ceps ../../common.ceps ../../timing.ceps ../controlpilot_interface.ceps ../controlpilot.ceps controlpilot_observer_interface.ceps controlpilot_observer.ceps readme_scenario_1.ceps 
 \`\`\`
 
 EOF
+
+
+ceps readme_scenario_2.ceps --pe --format markdown_github --ignore_simulations >> README.md
+cat >> README.md << EOF
+
+#### Result
+\`\`\`javascript
+EOF
+
+ceps ../../common.ceps ../../timing.ceps ../controlpilot_interface.ceps ../controlpilot.ceps controlpilot_observer_interface.ceps controlpilot_observer.ceps readme_scenario_2.ceps >> README.md 
+cat >> README.md << EOF
+\`\`\`
+EOF
+
+cat >> README.md << EOF
+
+#### How to run this example from the shell
+\`\`\`bash
+ceps ../../common.ceps ../../timing.ceps ../controlpilot_interface.ceps ../controlpilot.ceps controlpilot_observer_interface.ceps controlpilot_observer.ceps readme_scenario_2.ceps 
+\`\`\`
+
+EOF
+
+
+ceps readme_scenario_3.ceps --pe --format markdown_github --ignore_simulations >> README.md
+cat >> README.md << EOF
+
+#### Result
+\`\`\`javascript
+EOF
+
+ceps ../../common.ceps ../../timing.ceps ../controlpilot_interface.ceps ../controlpilot.ceps controlpilot_observer_interface.ceps controlpilot_observer.ceps readme_scenario_3.ceps >> README.md 
+cat >> README.md << EOF
+\`\`\`
+EOF
+
+cat >> README.md << EOF
+
+#### How to run this example from the shell
+\`\`\`bash
+ceps ../../common.ceps ../../timing.ceps ../controlpilot_interface.ceps ../controlpilot.ceps controlpilot_observer_interface.ceps controlpilot_observer.ceps readme_scenario_3.ceps 
+\`\`\`
+
+EOF
+
 

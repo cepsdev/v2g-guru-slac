@@ -6,22 +6,10 @@ docgen_parameters{
 
 kind Systemstate;
 kind Event;
-Event evControlPilotObserver_Measure,evControlPilotObserverStart;
-Systemstate ControlPilotObserver_ExternallyGeneratedSamplingEvents;
-Systemstate ControlPilotObserver_DetectStateThreshold;
-Systemstate ControlPilotWireMeasure;
-
-ControlPilotObserver_ExternallyGeneratedSamplingEvents = 1;
-ControlPilotObserver_DetectStateThreshold = 2;
-ControlPilotWireMeasure = ControlPilotStateBMin + as_int((ControlPilotStateBMax - ControlPilotStateBMin)/2);
 
 Simulation{
-    title{ControlPilotObserver;" 'observes' a state.";};
+    title{ControlPilotObserver;" remains in a wait state if started.";};
     Start{ControlPilotObserver;};
-    evControlPilotObserverStart;
-    evControlPilotObserver_Measure;
-    evControlPilotObserver_Measure;
-    evControlPilotObserver_Measure;
 };
 
 

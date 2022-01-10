@@ -1,0 +1,29 @@
+docgen_parameters{
+    kind Docgenparam;
+    Docgenparam heading_level;
+    heading_level = 2;
+};
+
+kind Systemstate;
+kind Event;
+Event evControlPilotObserver_Measure,evControlPilotObserverStart;
+Systemstate ControlPilotObserver_ExternallyGeneratedSamplingEvents;
+Systemstate ControlPilotObserver_DetectStateThreshold;
+Systemstate ControlPilotWireMeasure;
+
+Simulation{
+    title{ControlPilotObserver;" 'observes' a state if a sufficient number of equivalent and consecutive measurements are detected.";};
+    ControlPilotObserver_ExternallyGeneratedSamplingEvents = 1;
+    comment{"The default behaviour of ControlPilotObserver\nis to periodically generate sampling events, we provide these events.";};
+    ControlPilotObserver_DetectStateThreshold = 2;
+    comment{"ControlPilotObserver_DetectStateThreshold+1 is the number\nof consecutive equivalent measurements required to detect a state.";};
+    ControlPilotWireMeasure = ControlPilotStateBMin + as_int((ControlPilotStateBMax - ControlPilotStateBMin)/2);
+    comment{"\nConstant voltage signal indicating state B.";};
+    Start{ControlPilotObserver;};
+    evControlPilotObserverStart;
+    evControlPilotObserver_Measure;
+    evControlPilotObserver_Measure;
+    evControlPilotObserver_Measure;
+};
+
+
