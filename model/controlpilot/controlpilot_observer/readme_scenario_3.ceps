@@ -9,7 +9,7 @@ kind Event;
 Event evControlPilotObserver_Measure,evControlPilotObserverStart;
 Systemstate ControlPilotObserver_ExternallyGeneratedSamplingEvents;
 Systemstate ControlPilotObserver_DetectStateThreshold;
-Systemstate ControlPilotWireMeasure;
+Systemstate ControlPilotWireVoltageMeasurement;
 
 Simulation{
     title{ControlPilotObserver;" 'observes' a state if a sufficient number of equivalent and consecutive measurements are detected.";};
@@ -17,7 +17,7 @@ Simulation{
     comment{"The default behaviour of ControlPilotObserver\nis to periodically generate sampling events, we provide these events.";};
     ControlPilotObserver_DetectStateThreshold = 2;
     comment{"ControlPilotObserver_DetectStateThreshold+1 is the number\nof consecutive equivalent measurements required to detect a state.";};
-    ControlPilotWireMeasure = ControlPilotStateBMin + as_int((ControlPilotStateBMax - ControlPilotStateBMin)/2);
+    ControlPilotWireVoltageMeasurement = ControlPilotStateBMin + (ControlPilotStateBMax - ControlPilotStateBMin)/2.0;
     comment{"\nConstant voltage signal indicating state B.";};
     Start{ControlPilotObserver;};
     evControlPilotObserverStart;

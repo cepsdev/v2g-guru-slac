@@ -1,3 +1,8 @@
+gControlPilotObserverMeasure_A_ButNotLongEnough = 
+ gControlPilotWireMeasureA && (ControlPilotObserver_CountOfConsecutiveConstantMeasurements < ControlPilotObserver_DetectStateThreshold) ;
+
+gControlPilotObserverMeasure_A_LongEnough = 
+ gControlPilotWireMeasureA && (ControlPilotObserver_CountOfConsecutiveConstantMeasurements >= ControlPilotObserver_DetectStateThreshold) ;
 
 gControlPilotObserverMeasure_B_ButNotLongEnough = 
  gControlPilotWireMeasureB && (ControlPilotObserver_CountOfConsecutiveConstantMeasurements < ControlPilotObserver_DetectStateThreshold) ;
@@ -11,17 +16,43 @@ gControlPilotObserverMeasure_C_ButNotLongEnough =
 gControlPilotObserverMeasure_C_LongEnough = 
  gControlPilotWireMeasureC && (ControlPilotObserver_CountOfConsecutiveConstantMeasurements >= ControlPilotObserver_DetectStateThreshold) ;
 
+gControlPilotObserverMeasure_D_LongEnough = 
+ gControlPilotWireMeasureD && (ControlPilotObserver_CountOfConsecutiveConstantMeasurements >= ControlPilotObserver_DetectStateThreshold) ;
+
+gControlPilotObserverMeasure_D_ButNotLongEnough = 
+ gControlPilotWireMeasureD && (ControlPilotObserver_CountOfConsecutiveConstantMeasurements < ControlPilotObserver_DetectStateThreshold) ;
+
+gControlPilotObserverMeasure_E_LongEnough = 
+ gControlPilotWireMeasureE && (ControlPilotObserver_CountOfConsecutiveConstantMeasurements >= ControlPilotObserver_DetectStateThreshold) ;
+
+gControlPilotObserverMeasure_E_ButNotLongEnough = 
+ gControlPilotWireMeasureE && (ControlPilotObserver_CountOfConsecutiveConstantMeasurements < ControlPilotObserver_DetectStateThreshold) ;
+
+gControlPilotObserverMeasure_F_LongEnough = 
+ gControlPilotWireMeasureF && (ControlPilotObserver_CountOfConsecutiveConstantMeasurements >= ControlPilotObserver_DetectStateThreshold) ;
+
+gControlPilotObserverMeasure_F_ButNotLongEnough = 
+ gControlPilotWireMeasureF && (ControlPilotObserver_CountOfConsecutiveConstantMeasurements < ControlPilotObserver_DetectStateThreshold) ;
+
 
 sm{
     ControlPilotObserver;
     sm{
-        Observe;
+        ObserveState;
         states{ Initial;
                 Unknown;
-                UnknownC;
+                UnknownA;
                 UnknownB;
-                C;
+                UnknownC;
+                UnknownD;
+                UnknownE;
+                UnknownF;
+                A;
                 B;
+                C;
+                D;
+                E;
+                F;
             };
             
         on_enter{
@@ -43,13 +74,36 @@ sm{
             };
         };
         t{  Initial;
+            UnknownA;
+            gControlPilotWireMeasureA;
+        };
+
+        t{  Initial;
             UnknownB;
             gControlPilotWireMeasureB;
         };
         t{  Initial;
             UnknownC;
-            gControlPilotWireMeasureC
-        ;};
+            gControlPilotWireMeasureC;
+        };
+
+        t{  Initial;
+            UnknownD;
+            gControlPilotWireMeasureD;
+        };
+
+        t{  Initial;
+            UnknownE;
+            gControlPilotWireMeasureE;
+        };
+
+        t{  Initial;
+            UnknownF;
+            gControlPilotWireMeasureF;
+        };
+
+
+
         t{  Initial;
             Unknown;
             gControlPilotWireMeasureUnknownState;
@@ -138,11 +192,11 @@ sm{
     t{Initial; Wait;};
 
     t{  Wait;
-        Observe;
+        ObserveState;
         evControlPilotObserverStart;
     };
 
-    t{  Observe;
+    t{  ObserveState;
         Wait;
         evControlPilotObserverStop;
     };

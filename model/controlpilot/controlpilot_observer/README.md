@@ -45,9 +45,9 @@ Trigger Event evControlPilotObserverStop.
 #### Result
 ```javascript
 ControlPilotObserver.Initial- ControlPilotObserver.Wait+ 
-ControlPilotObserver.Wait- ControlPilotObserver.Observe+ ControlPilotObserver.Observe.Initial+ 
-ControlPilotObserver.Observe.Initial- ControlPilotObserver.Observe.Unknown+ 
-ControlPilotObserver.Wait+ ControlPilotObserver.Observe- ControlPilotObserver.Observe.Unknown- 
+ControlPilotObserver.Wait- ControlPilotObserver.ObserveState+ ControlPilotObserver.ObserveState.Initial+ 
+ControlPilotObserver.ObserveState.Initial- ControlPilotObserver.ObserveState.UnknownE+ 
+ControlPilotObserver.Wait+ ControlPilotObserver.ObserveState- ControlPilotObserver.ObserveState.UnknownE- 
 ```
 
 #### How to run this example from the shell
@@ -73,7 +73,7 @@ of consecutive equivalent measurements required to detect a state.*/
 ```
 
 ```javascript
-ControlPilotWireMeasure = (ControlPilotStateBMin+as_int(((ControlPilotStateBMax-ControlPilotStateBMin)/2))) /*
+ControlPilotWireVoltageMeasurement = (ControlPilotStateBMin+((ControlPilotStateBMax-ControlPilotStateBMin)/2)) /*
 Constant voltage signal indicating state B.*/ 
 ```
 
@@ -100,9 +100,9 @@ Trigger Event evControlPilotObserver_Measure.
 #### Result
 ```javascript
 ControlPilotObserver.Initial- ControlPilotObserver.Wait+ 
-ControlPilotObserver.Wait- ControlPilotObserver.Observe+ ControlPilotObserver.Observe.Initial+ 
-ControlPilotObserver.Observe.Initial- ControlPilotObserver.Observe.UnknownB+ 
-ControlPilotObserver.Observe.UnknownB- ControlPilotObserver.Observe.B+ 
+ControlPilotObserver.Wait- ControlPilotObserver.ObserveState+ ControlPilotObserver.ObserveState.Initial+ 
+ControlPilotObserver.ObserveState.Initial- ControlPilotObserver.ObserveState.UnknownB+ 
+ControlPilotObserver.ObserveState.UnknownB- ControlPilotObserver.ObserveState.B+ 
 ```
 
 #### How to run this example from the shell

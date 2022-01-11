@@ -2,19 +2,38 @@ kind Event;
 kind Systemstate;
 kind Guard;
 
-Guard       gControlPilotWireMeasureB, 
-            gControlPilotWireMeasureC,
+Guard       gControlPilotWireMeasureA,gControlPilotWireMeasureB, gControlPilotWireMeasureC,
+            gControlPilotWireMeasureD,gControlPilotWireMeasureE,gControlPilotWireMeasureF,
             gControlPilotWireMeasureUnknownState;
 
-Systemstate ControlPilotWireMeasure;
+Systemstate ControlPilotWireVoltageMeasurement;
 
-val ControlPilotStateBMin = 9.0;
-val ControlPilotStateBMax = 12.0;
-val ControlPilotStateCMin = 6.0;
-val ControlPilotStateCMax = 8.0;
+val ControlPilotStateAMin = 11.0;
+val ControlPilotStateAMax = 13.0;
 
+val ControlPilotStateBMin = 8.0;
+val ControlPilotStateBMax = 10.0;
 
-gControlPilotWireMeasureB = ControlPilotWireMeasure >= ControlPilotStateBMin && ControlPilotWireMeasure <= ControlPilotStateBMax;
-gControlPilotWireMeasureC = ControlPilotWireMeasure >= ControlPilotStateCMin && ControlPilotWireMeasure <= ControlPilotStateCMax;
-gControlPilotWireMeasureUnknownState = !gControlPilotWireMeasureC && !gControlPilotWireMeasureB;
-ControlPilotWireMeasure = 0.0;
+val ControlPilotStateCMin = 5.0;
+val ControlPilotStateCMax = 7.0;
+
+val ControlPilotStateDMin = 2.0;
+val ControlPilotStateDMax = 6.0;
+
+val ControlPilotStateEMin = -1.0;
+val ControlPilotStateEMax = 1.0;
+
+val ControlPilotStateFMin = -13.0;
+val ControlPilotStateFMax = -11.0;
+
+gControlPilotWireMeasureA = ControlPilotWireVoltageMeasurement >= ControlPilotStateAMin && ControlPilotWireVoltageMeasurement <= ControlPilotStateAMax;
+gControlPilotWireMeasureB = ControlPilotWireVoltageMeasurement >= ControlPilotStateBMin && ControlPilotWireVoltageMeasurement <= ControlPilotStateBMax;
+gControlPilotWireMeasureC = ControlPilotWireVoltageMeasurement >= ControlPilotStateCMin && ControlPilotWireVoltageMeasurement <= ControlPilotStateCMax;
+gControlPilotWireMeasureD = ControlPilotWireVoltageMeasurement >= ControlPilotStateDMin && ControlPilotWireVoltageMeasurement <= ControlPilotStateDMax;
+gControlPilotWireMeasureE = ControlPilotWireVoltageMeasurement >= ControlPilotStateEMin && ControlPilotWireVoltageMeasurement <= ControlPilotStateEMax;
+gControlPilotWireMeasureF = ControlPilotWireVoltageMeasurement >= ControlPilotStateFMin && ControlPilotWireVoltageMeasurement <= ControlPilotStateFMax;
+
+gControlPilotWireMeasureUnknownState =  !gControlPilotWireMeasureA && !gControlPilotWireMeasureB && !gControlPilotWireMeasureC && 
+                                        !gControlPilotWireMeasureD && !gControlPilotWireMeasureE && !gControlPilotWireMeasureF;
+
+ControlPilotWireVoltageMeasurement = 0.0;
