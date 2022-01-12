@@ -115,11 +115,20 @@ sm{
             gControlPilotObserverMeasure_B_ButNotLongEnough;
             doIncrementSampleCtr;
         };
+
         t{  UnknownB;
             B;
             evControlPilotObserver_Measure;
             gControlPilotObserverMeasure_B_LongEnough;
         };
+
+        t{  UnknownB;
+            Unknown;
+            evControlPilotObserver_Measure;
+            gNotControlPilotWireMeasureB;
+            doResetIncrementSampleCtr;
+        };
+
         t{  B;
             B;
             evControlPilotObserver_Measure;
@@ -167,22 +176,14 @@ sm{
             gControlPilotWireMeasureUnknownState;
             doResetIncrementSampleCtr;
         };
-
-        t{  Unknown;
-            Unknown;
-            evControlPilotObserver_Measure;
-            gControlPilotWireMeasureUnknownState;
-        };
-        
+      
         t{  Unknown;
             UnknownB;
-            evControlPilotObserver_Measure;
             gControlPilotWireMeasureB;
         };
         
         t{  Unknown;
             UnknownC;
-            evControlPilotObserver_Measure;
             gControlPilotWireMeasureC;
         };
     };

@@ -1,0 +1,14 @@
+kind Event;
+Event evSetControlPilotStateToC;
+Systemstate ControlPilotWireVoltageMeasurement;
+
+sm{
+    SetControlPilotStateToC;
+    states{Initial;};
+    Actions{
+        doSetControlPilotWireVoltage{
+            ControlPilotWireVoltageMeasurement = ControlPilotStateCMin + (ControlPilotStateCMax - ControlPilotStateCMin)/2.0;
+        };
+    };
+    t{Initial;Initial;evSetControlPilotStateToC;doSetControlPilotWireVoltage;};
+};

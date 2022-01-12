@@ -1,0 +1,39 @@
+docgen_parameters{
+    kind Docgenparam;
+    Docgenparam heading_level;
+    heading_level = 2;
+};
+
+kind Systemstate;
+kind Event;
+Event evControlPilotObserver_Measure,evControlPilotObserverStart;
+Systemstate ControlPilotObserver_ExternallyGeneratedSamplingEvents;
+Systemstate ControlPilotObserver_DetectStateThreshold;
+Systemstate ControlPilotWireVoltageMeasurement;
+
+Simulation{
+    title{ControlPilotObserver;" 'observes' a state if a sufficient number of equivalent and consecutive measurements are detected.";};
+    ControlPilotObserver_ExternallyGeneratedSamplingEvents = 1;
+    comment{"The default behaviour of ControlPilotObserver\nis to periodically generate sampling events, we provide these events.";};
+    ControlPilotObserver_DetectStateThreshold = 2;
+    comment{"ControlPilotObserver_DetectStateThreshold+1 is the number\nof consecutive equivalent measurements required to detect a state.";};
+    ControlPilotWireVoltageMeasurement = ControlPilotStateBMin + (ControlPilotStateBMax - ControlPilotStateBMin)/2.0;
+    comment{"\nConstant voltage signal indicating state B.";};
+    Start{ControlPilotObserver;SetControlPilotStateToC;};
+    evControlPilotObserverStart;
+    evControlPilotObserver_Measure;
+    evControlPilotObserver_Measure;
+    evSetControlPilotStateToC;
+    comment{
+    "Sets the voltage level to 'C' shortly before 'B' would be detected.\n"; 
+    "Please note, that this event doesn't affect ControlPilotObserver, i.e.\n";
+    "the change will be detected only after an additional sampling event which resets\n"; 
+    "the sampling counter of ControlPilotObserver. Hence 4 sampling events in total are required ";
+    "for the detection of 'C'.";};
+    evControlPilotObserver_Measure;
+    evControlPilotObserver_Measure;
+    evControlPilotObserver_Measure;
+    evControlPilotObserver_Measure;
+};
+
+

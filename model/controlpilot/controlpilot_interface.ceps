@@ -4,7 +4,8 @@ kind Guard;
 
 Guard       gControlPilotWireMeasureA,gControlPilotWireMeasureB, gControlPilotWireMeasureC,
             gControlPilotWireMeasureD,gControlPilotWireMeasureE,gControlPilotWireMeasureF,
-            gControlPilotWireMeasureUnknownState;
+            gControlPilotWireMeasureUnknownState, gNotControlPilotWireMeasureA, gNotControlPilotWireMeasureB,gNotControlPilotWireMeasureC,gNotControlPilotWireMeasureD,
+            gNotControlPilotWireMeasureE,gNotControlPilotWireMeasureF;
 
 Systemstate ControlPilotWireVoltageMeasurement;
 
@@ -32,6 +33,13 @@ gControlPilotWireMeasureC = ControlPilotWireVoltageMeasurement >= ControlPilotSt
 gControlPilotWireMeasureD = ControlPilotWireVoltageMeasurement >= ControlPilotStateDMin && ControlPilotWireVoltageMeasurement <= ControlPilotStateDMax;
 gControlPilotWireMeasureE = ControlPilotWireVoltageMeasurement >= ControlPilotStateEMin && ControlPilotWireVoltageMeasurement <= ControlPilotStateEMax;
 gControlPilotWireMeasureF = ControlPilotWireVoltageMeasurement >= ControlPilotStateFMin && ControlPilotWireVoltageMeasurement <= ControlPilotStateFMax;
+
+gNotControlPilotWireMeasureA = !gControlPilotWireMeasureA;
+gNotControlPilotWireMeasureB = !gControlPilotWireMeasureB;
+gNotControlPilotWireMeasureC = !gControlPilotWireMeasureC;
+gNotControlPilotWireMeasureD = !gControlPilotWireMeasureD;
+gNotControlPilotWireMeasureE = !gControlPilotWireMeasureE;
+gNotControlPilotWireMeasureF = !gControlPilotWireMeasureF;
 
 gControlPilotWireMeasureUnknownState =  !gControlPilotWireMeasureA && !gControlPilotWireMeasureB && !gControlPilotWireMeasureC && 
                                         !gControlPilotWireMeasureD && !gControlPilotWireMeasureE && !gControlPilotWireMeasureF;
