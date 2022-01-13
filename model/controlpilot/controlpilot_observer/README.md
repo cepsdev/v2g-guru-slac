@@ -1,7 +1,7 @@
 
 # ControlPilotObserver state machine
 
-ControlPilotObserver specifies how to detetct a control pilot state X (X= A,B,C,D,E,F). It's main ingredients are the sampling event `evControlPilotObserver_Measure` and a set of guards
+ControlPilotObserver specifies how to detetect a control pilot state X (X= A,B,C,D,E,F). Its main ingredients are the sampling event `evControlPilotObserver_Measure` and a set of guards
 of the form `gControlPilotWireMeasureX`, `gNotControlPilotWireMeasureX`, `gControlPilotObserverMeasure_X_LongEnough`, `gControlPilotObserverMeasure_X_ButNotLongEnough` (X= A,B,C,D,E,F), and the systemstates
 `ControlPilotObserver_CountOfConsecutiveConstantMeasurements` and `ControlPilotObserver_DetectStateThreshold`. 
 The idea is quite simple: a state X is recognized if for a large enough number (`ControlPilotObserver_DetectStateThreshold`) of consecutive measurements the voltage on the control pilot line is in [RangeXMin,RangeXMax]. 
