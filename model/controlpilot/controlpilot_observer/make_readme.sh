@@ -12,7 +12,7 @@ of the form \`gControlPilotWireMeasureX\`, \`gNotControlPilotWireMeasureX\`, \`g
 \`ControlPilotObserver_CountOfConsecutiveConstantMeasurements\` and \`ControlPilotObserver_DetectStateThreshold\`. 
 The idea is quite simple: a state X is recognized if for a large enough number (\`ControlPilotObserver_DetectStateThreshold\`) of consecutive measurements the voltage on the control pilot line is in [RangeXMin,RangeXMax]. 
 
-## ControlPilotObserver state chart (generated drawing - messy)
+## ControlPilotObserver state chart (generated drawing - big open separately)
 ![]($PIC)
 
 
