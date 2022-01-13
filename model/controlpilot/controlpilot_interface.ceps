@@ -19,13 +19,13 @@ val ControlPilotStateCMin = 5.0;
 val ControlPilotStateCMax = 7.0;
 
 val ControlPilotStateDMin = 2.0;
-val ControlPilotStateDMax = 6.0;
+val ControlPilotStateDMax = 4.0;
 
 val ControlPilotStateEMin = -1.0;
 val ControlPilotStateEMax = 1.0;
 
-val ControlPilotStateFMin = -13.0;
-val ControlPilotStateFMax = -11.0;
+val ControlPilotStateFMin = -12.0;
+val ControlPilotStateFMax = -13.0;
 
 gControlPilotWireMeasureA = ControlPilotWireVoltageMeasurement >= ControlPilotStateAMin && ControlPilotWireVoltageMeasurement <= ControlPilotStateAMax;
 gControlPilotWireMeasureB = ControlPilotWireVoltageMeasurement >= ControlPilotStateBMin && ControlPilotWireVoltageMeasurement <= ControlPilotStateBMax;

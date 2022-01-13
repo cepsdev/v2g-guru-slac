@@ -1,6 +1,17 @@
+
+# ControlPilotObserver state machine
+
+ControlPilotObserver specifies how to detetct a control pilot state X (X= A,B,C,D,E,F). It's main ingredients are the sampling event `evControlPilotObserver_Measure` and a set of guards
+of the form `gControlPilotWireMeasureX`, `gNotControlPilotWireMeasureX`, `gControlPilotObserverMeasure_X_LongEnough`, `gControlPilotObserverMeasure_X_ButNotLongEnough` (X= A,B,C,D,E,F), and the systemstates
+`ControlPilotObserver_CountOfConsecutiveConstantMeasurements` and `ControlPilotObserver_DetectStateThreshold`. 
+The idea is quite simple: a state X is recognized if for a large enough number (`ControlPilotObserver_DetectStateThreshold`) of consecutive measurements the voltage on the control pilot line is in [RangeXMin,RangeXMax]. 
+
+## ControlPilotObserver state chart (generated drawing - messy)
 ![](img/controlpilot_observer.svg)
 
-## Examples
+
+
+## Easy Examples
 
 
 ### ControlPilotObserver remains in a wait state if started.
@@ -115,10 +126,10 @@ ceps ../../common.ceps ../../timing.ceps ../controlpilot_interface.ceps ../contr
 ![](img/readme_scenario_4a.svg)
 
 The depicted state machine serves us as a switch, which sets the measured voltage on the control pilot to a 'state C' compatible voltage level. 
-The mechanics is simple: the state machine has a single transition with the sole purpose to trigger the action 
+The mechanics is quite simple: the state machine has a single transition with the sole purpose to trigger the action 
 `doSetControlPilotWireVoltage` whenever the event evSetControlPilotStateToC has occured.
 
-### ControlPilotObserver 'observes' a state if a sufficient number of equivalent and consecutive measurements are detected.
+### ControlPilotObserver goes through the chain of states UnknownX => Unknown => UnknownY => Y if the measured voltage changes quickly from X to Y and remains at Y long enough.
 
 
 #### Steps
@@ -159,7 +170,7 @@ Trigger Event evControlPilotObserver_Measure.
 evSetControlPilotStateToC /*Sets the voltage level to 'C' shortly before 'B' would be detected.
 Please note, that this event doesn't affect ControlPilotObserver, i.e.
 the change will be detected only after an additional sampling event which resets
-the inner state of ControlPilotObserver. Hence 4 sampling events are required for the detection of 'C'.*/ 
+the sampling counter of ControlPilotObserver. Hence 4 sampling events in total are required for the detection of 'C'.*/ 
 ```
 
 ```javascript
@@ -177,6 +188,10 @@ Trigger Event evControlPilotObserver_Measure.
 ```javascript
 Trigger Event evControlPilotObserver_Measure.
 ```
+
+#### What the steps above mean in terms of the voltage signal on CLPLT
+
+![](img/readme4.jpg)
 
 #### Result
 ```javascript

@@ -12,7 +12,7 @@ Systemstate ControlPilotObserver_DetectStateThreshold;
 Systemstate ControlPilotWireVoltageMeasurement;
 
 Simulation{
-    title{ControlPilotObserver;" 'observes' a state if a sufficient number of equivalent and consecutive measurements are detected.";};
+    title{ControlPilotObserver;" goes through the chain of states UnknownX => Unknown => UnknownY => Y if the measured voltage changes quickly from X to Y and remains at Y long enough.";};
     ControlPilotObserver_ExternallyGeneratedSamplingEvents = 1;
     comment{"The default behaviour of ControlPilotObserver\nis to periodically generate sampling events, we provide these events.";};
     ControlPilotObserver_DetectStateThreshold = 2;
