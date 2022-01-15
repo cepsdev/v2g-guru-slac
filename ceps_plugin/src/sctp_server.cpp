@@ -45,6 +45,21 @@ SOFTWARE.
 #include "ceps2mme.hpp"
 
 
+using channel_t = short;
+
+struct channel_info_t{
+    enum type: short{
+        i32 = 5,
+        i64,
+        d64,
+        str
+    };
+    sockaddr client;
+    socklen_t len;
+    std::vector<std::string> msg_names;
+    std::vector<short> msg_types;
+} ;
+
 template<typename T>
     struct on_exit_cleanup{
         T f_;
@@ -53,6 +68,9 @@ template<typename T>
     };
 
 mme4ceps_plugin::result_t mme4ceps_plugin::start_sctp_server(std::string port){
+    
+    std::cerr << "start_sctp_server("<< port <<")" << std::endl;
+
     bool constexpr debug {false};
     addrinfo hints = {0}, *addrinfo_res = nullptr;
     memset(&hints,0,sizeof(hints));
@@ -114,12 +132,15 @@ mme4ceps_plugin::result_t mme4ceps_plugin::start_sctp_server(std::string port){
     {
         std::lock_guard g{commfd_mtx};
         commfd = listenfd;
-    }       
+    }
 
+
+    std::unordered_map<channel_t, channel_info_t> ch2chinfo;
     
     std::thread reader_thread {
         [=,this]()
         {
+            std::cerr << "reader_thread\n\n" << std::endl;
             on_exit_cleanup on_exit{ [&] {if (addrinfo_res != nullptr) freeaddrinfo(addrinfo_res);}};
             socklen_t len = it->ai_addrlen;
             char readbuf[2048];
@@ -129,10 +150,17 @@ mme4ceps_plugin::result_t mme4ceps_plugin::start_sctp_server(std::string port){
                 sctp_sndrcvinfo sndrcvinfo{0};
                 memset(&client,0,sizeof(client));
                 memset(&sndrcvinfo,0,sizeof(sndrcvinfo));
-                int msg_flags{}; 
+                int msg_flags{};
+                std::cerr << "reader_thread:sctp_recvmsg\n\n" << std::endl;
+
                 auto rd_sz = sctp_recvmsg(listenfd,readbuf,sizeof(readbuf),(sockaddr*)&client,&len,&sndrcvinfo,&msg_flags);
-                if (rd_sz > 0)
-                {
+                std::cerr << "reader_thread:sctp_recvmsg:" << rd_sz << "bytes sndrcvinfo.sinfo_stream="<< sndrcvinfo.sinfo_stream  << "\n\n" << std::endl;
+
+                if (rd_sz > 0 && sndrcvinfo.sinfo_stream != 0){
+                    std::cerr << " read " << rd_sz <<" bytes sndrcvinfo.sinfo_stream =" << sndrcvinfo.sinfo_stream << std::endl;
+                    int handshake_cmd = 0;
+                    sctp_sendmsg(listenfd, &handshake_cmd,sizeof(handshake_cmd),(sockaddr*) &client,len,0,0,sndrcvinfo.sinfo_stream,0,0 ) ;
+                } else if(rd_sz > 0) {
                     {
                         std::lock_guard g{commfd_mtx};
                         last_client = client;

@@ -1,0 +1,60 @@
+kind Event;
+kind Systemstate;
+kind Guard;
+
+Event evStartToggling,evControlPilotObserver_Measure;
+Systemstate SignalGeneratorBCBToggles;
+
+SignalGeneratorBCBToggles = 4;
+
+ControlPilotObserver_SamplingDelta = T_vald_detect_time / 10.0;
+ControlPilotObserver_DetectStateThreshold =   as_int(T_vald_detect_time/ControlPilotObserver_SamplingDelta);
+val toggles = 10;
+val time_delta = 1.0*s;
+
+sm{
+    SignalGeneratorBCBToggles;
+    
+    states{
+        Initial;
+    };
+
+    sm{
+        Toggler;
+        Event evToggle;
+
+        Actions{
+            setStateB{ ControlPilotWireMeasure = 0.5*(ControlPilotStateBMax-ControlPilotStateBMin);start_timer(time_delta,evToggle);};
+            setStateC{ ControlPilotWireMeasure = 0.5*(ControlPilotStateCMax-ControlPilotStateCMin);start_timer(time_delta,evToggle);};
+        };
+        states{Initial;DoB;DoC;};
+        
+    };
+
+};
+
+//ControlPilotWireMeasure
+
+Guard gBObserved;
+Guard gCObserved;
+gBObserved = in_state(ControlPilotObserver.Observe.B);
+//gCObserved = in_state(ControlPilotObserver.Observe.C);
+sm{
+    SS;
+    states{Initial;};
+    Actions{
+     doCheck{
+            if (in_state(ControlPilotObserver.Observe.B)){
+                //print("ABA\n");
+            } else {
+                //print("?????\n");
+            }
+        };
+    };
+    t{Initial;Initial;evControlPilotObserver_Measure;doCheck;};
+
+};
+
+Simulation{
+ Start{SignalGeneratorBCBToggles;};
+};
