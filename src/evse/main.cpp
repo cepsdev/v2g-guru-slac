@@ -161,6 +161,7 @@ void comm_handler(std::pair<int,addrinfo*> sckt_addr, Controlpilot & ctlplt){
             //  type 
             //  name
             char const *  msg_name = "controlpilot";
+
             char const *  entry1 = "voltage";
             char const *  entry2 = "duty_cycle";
             char const *  entry3 = "oscillator_active";
@@ -168,7 +169,9 @@ void comm_handler(std::pair<int,addrinfo*> sckt_addr, Controlpilot & ctlplt){
             
 
 
+            //send name of message
             sctp_sendmsg(sckt, msg_name,strlen(msg_name),(sockaddr*) &peeraddr,len,0,0,sri.sinfo_stream,0,0 );
+            
             int entries = 4;
             sctp_sendmsg(sckt, &entries,sizeof(entries),(sockaddr*) &peeraddr,len,0,0,sri.sinfo_stream,0,0 );
 
@@ -182,6 +185,7 @@ void comm_handler(std::pair<int,addrinfo*> sckt_addr, Controlpilot & ctlplt){
             sctp_sendmsg(sckt, entry1,strlen(entry1),(sockaddr*) &peeraddr,len,0,0,sri.sinfo_stream,0,0 );
             t = type_encoding::d64;
             sctp_sendmsg(sckt, &t,sizeof(t),(sockaddr*) &peeraddr,len,0,0,sri.sinfo_stream,0,0 );
+            
             sctp_sendmsg(sckt, entry2,strlen(entry2),(sockaddr*) &peeraddr,len,0,0,sri.sinfo_stream,0,0 );
             t = type_encoding::d64;
             sctp_sendmsg(sckt, &t,sizeof(t),(sockaddr*) &peeraddr,len,0,0,sri.sinfo_stream,0,0 );

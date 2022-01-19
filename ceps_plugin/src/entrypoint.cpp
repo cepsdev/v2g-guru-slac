@@ -266,11 +266,20 @@ static ceps::ast::node_t plugin_send_mme(ceps::ast::node_callparameters_t params
     return nullptr;
 }
 
+static ceps::ast::node_t plugin_send_generic(ceps::ast::node_callparameters_t params){
+    auto msg = get_first_child(params);
+    //auto ns = ceps::ast::Nodeset{msg}["mme"];
+    //auto header = ns["header"];
+    std::cerr << "\nplugin_send_generic: " << *params << std::endl;
+    return nullptr;
+}
+
 extern "C" void init_plugin(IUserdefined_function_registry* smc)
 {
   plugn.ceps_engine = plugn.plugin_master = plugin_master = smc->get_plugin_interface(); 
   plugin_master->reg_ceps_plugin("homeplug_mme_handler", plugin_entrypoint_route_mme);
   plugin_master->reg_ceps_plugin("send_homeplug_mme",plugin_send_mme);
+  plugin_master->reg_ceps_plugin("send_v2g_low_level",plugin_send_generic);
   plugin_master->run_indefinitely(true);
 }
 

@@ -1,0 +1,72 @@
+kind Event;
+kind Systemstate;
+kind Guard;
+
+Systemstate voltage, duty_cycle, oscillator_active, oscillator_freq;
+
+val print_data = 1;
+
+sm{
+ ProduceCtlPilotData;
+ states{Initial;Tick;Tock;};
+
+ Event evTick;
+
+ on_enter{
+  voltage = 12.0;
+  duty_cycle = 100.0;
+  oscillator_active = 1;
+  oscillator_freq = 1000.0;
+  start_periodic_timer(1.0*s,evTick);
+ };
+ 
+ Actions{
+ 
+    doTick{
+        voltage = voltage * 0.5;
+        duty_cycle = duty_cycle * 0.5;
+        oscillator_active = !oscillator_active;
+        oscillator_freq = oscillator_freq * 0.5;
+        if (print_data){
+            print("voltage=",voltage,"\n");
+            print("duty_cycle=",duty_cycle,"\n");
+            print("oscillator_active=",oscillator_active,"\n");
+            print("oscillator_freq=",oscillator_freq,"\n");
+        }
+    };
+
+    doTock{
+        voltage = voltage * 2.0;
+        duty_cycle = duty_cycle * 2.0;
+        oscillator_active = !oscillator_active;
+        oscillator_freq = oscillator_freq * 2.0;
+    };
+
+    doPrint{
+        if (print_data){
+            print("voltage=",voltage,"\n");
+            print("duty_cycle=",duty_cycle,"\n");
+            print("oscillator_active=",oscillator_active,"\n");
+            print("oscillator_freq=",oscillator_freq,"\n");
+        }
+    };
+
+    doSendData{
+        send_v2g_low_level(
+            controlpilot{
+                voltage{voltage;};
+                duty_cycle{duty_cycle;};
+                oscillator_active{oscillator_active;};
+                oscillator_freq{oscillator_freq;};
+            }
+        );
+    };
+ };
+ t{Initial;Tick;doTick;};
+ t{Tick;Tock;doTock;doPrint;doSendData;evTick;};
+ t{Tock;Tick;doTick;doPrint;doSendData;evTick;};
+};
+
+Simulation{
+    Start{ProduceCtlPilotData;};
+};
