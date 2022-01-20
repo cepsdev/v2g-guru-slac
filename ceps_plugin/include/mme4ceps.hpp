@@ -1,7 +1,7 @@
 /*
 MIT License
 
-Copyright (c) 2021 Tomas Prerovsky
+Copyright (c) 2021,2022 Tomas Prerovsky
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -25,12 +25,26 @@ SOFTWARE.
 #pragma once
 
 #include <stdlib.h>
+#include <array>
 #include <ctype.h>
 #include "ceps_ast.hh" 
 #include "core/include/state_machine_simulation_core_reg_fun.hpp"
 #include "core/include/state_machine_simulation_core_plugin_interface.hpp"
 #include "core/include/state_machine_simulation_core.hpp"
 #include "mme.hpp"
+#include <functional>
+
+namespace std{
+
+template<>
+ struct hash<sockaddr>{
+   hash<unsigned long long> h;
+   size_t operator() (const sockaddr& v) const {
+     return h( *((long long *) &v))  ;
+   }
+ };
+}
+
 
 class mme4ceps_plugin{
     void init();
@@ -40,6 +54,36 @@ class mme4ceps_plugin{
       bool ok;
       std::string msg;
     };
+
+    /*
+    channel_info_t represents a logical connection between us and a remote site
+    */
+
+    using channel_t = short;
+
+    struct logical_connection_info_t{
+        enum type: short{
+            i32 = 5,
+            i64,
+            d64,
+            str
+        };
+        logical_connection_info_t() = default;
+        logical_connection_info_t(sockaddr client,socklen_t len):client{client},len{len}{}
+        bool valid = false;
+        sockaddr client;
+        socklen_t len;
+        channel_t channel = 0;
+        bool generic = false;
+        std::string msg_name;
+        std::vector<std::string> fields;
+        std::vector<short> field_types;
+    };
+
+    std::unordered_map<sockaddr, std::vector<logical_connection_info_t>> logical_connections;
+    std::mutex logical_connections_mtx;
+
+    void register_client(logical_connection_info_t conn);
 
     ceps::parser_env::Scope scope;    
     ceps::ast::node_t associated_ceps_block = nullptr;

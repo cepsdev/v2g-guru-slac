@@ -1,7 +1,7 @@
 /*
 MIT License
 
-Copyright (c) 2021 Tomas Prerovsky
+Copyright (c) 2021,2022 Tomas Prerovsky
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -45,20 +45,7 @@ SOFTWARE.
 #include "ceps2mme.hpp"
 
 
-using channel_t = short;
 
-struct channel_info_t{
-    enum type: short{
-        i32 = 5,
-        i64,
-        d64,
-        str
-    };
-    sockaddr client;
-    socklen_t len;
-    std::vector<std::string> msg_names;
-    std::vector<short> msg_types;
-} ;
 
 template<typename T>
     struct on_exit_cleanup{
@@ -133,10 +120,7 @@ mme4ceps_plugin::result_t mme4ceps_plugin::start_sctp_server(std::string port){
         std::lock_guard g{commfd_mtx};
         commfd = listenfd;
     }
-
-
-    std::unordered_map<channel_t, channel_info_t> ch2chinfo;
-    
+ 
     std::thread reader_thread {
         [=,this]()
         {

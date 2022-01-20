@@ -3,5 +3,5 @@ include_homeplug_mme_handler{};
 Simulation{
     Event evMatchingProcessStartTrigger;
     run_include_homeplug_mme_handler{};
-    start_timer(0.2*s,evMatchingProcessStartTrigger);
+    start_timer(10.0*s,evMatchingProcessStartTrigger);
 };

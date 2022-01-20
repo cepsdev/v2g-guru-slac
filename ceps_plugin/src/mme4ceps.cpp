@@ -49,6 +49,7 @@ void mme4ceps_plugin::init(){
 }
 
 void mme4ceps_plugin::handle_homeplug_mme(homeplug_mme_generic* msg, size_t mme_size){
+  if (mme_size < sizeof(homeplug_mme_generic_header)) return; 
   auto it = mme_msg_to_symbol_table_setup_routines.find(msg->mmtype);
   if (it == mme_msg_to_symbol_table_setup_routines.end()) return;
   if (associated_ceps_block == nullptr) return;
@@ -74,6 +75,23 @@ void mme4ceps_plugin::handle_homeplug_mme(homeplug_mme_generic* msg, size_t mme_
 
   gc(ceps_fragment);
 }
+
+
+bool operator == (sockaddr const & lhs, sockaddr const & rhs ){
+  for(size_t i = 0; i < sizeof(sockaddr); ++ i){
+    if ( ((char*) &lhs)[i] != ((char*) &rhs)[i]  ) return false;
+  }
+  return true;
+}
+
+void mme4ceps_plugin::register_client(logical_connection_info_t conn){
+  std::lock_guard<std::mutex> g{logical_connections_mtx};
+  auto it = logical_connections.find(conn.client);
+  if (it == logical_connections.end()){
+
+  }
+}
+
 
 void mme4ceps_plugin::set_associated_ceps_block(ceps::ast::node_t v){
     auto t = associated_ceps_block;
