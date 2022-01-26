@@ -64,6 +64,7 @@ void mme4ceps_plugin::init(){
 
 void mme4ceps_plugin::handle_homeplug_mme(homeplug_mme_generic* msg, size_t mme_size){
   if (mme_size < sizeof(homeplug_mme_generic_header)) return;
+  //std::cerr << *msg << std::endl;
 
   auto it = mme_msg_to_symbol_table_setup_routines.find(msg->mmtype);
   if (it == mme_msg_to_symbol_table_setup_routines.end()) return;

@@ -26,18 +26,21 @@ SOFTWARE.
 
 std::ostream& operator << (std::ostream & os, homeplug_mme_generic const & mme_msg){
   os << "mme header:\n";
-  os << "\t";
-  os << "osa :";
-  for(size_t i = 0; i < sizeof(mme_msg.osa);++i){
-    os << " " << (int)mme_msg.osa[i];
-  }
-  os << "\n";
+
   os << "\t";
   os << "oda :";
   for(size_t i = 0; i < sizeof(mme_msg.oda);++i){
     os << " " << (int)mme_msg.oda[i];
   }
   os << "\n";
+  
+  os << "\t";
+  os << "osa :";
+  for(size_t i = 0; i < sizeof(mme_msg.osa);++i){
+    os << " " << (int)mme_msg.osa[i];
+  }
+  os << "\n";
+
   os << "\t";os << "mmtype: " <<(int) mme_msg.mmtype;
   if (mme_msg.mmtype == mme::CM_SLAC_PARM_REQ)
    os << " (CM_SLAC_PARM_REQ)\n"; 

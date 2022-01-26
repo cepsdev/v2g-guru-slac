@@ -10,8 +10,8 @@ label SETUP_MME_PLUGIN_DEF_MME_HEADER title = "Every management message comes wi
 
 macro mme_header{
     header{
-        oda{0;0;0;0;0;0;};
-        osa{0;0;0;0;0;0;};
+        oda{0;1;2;3;4;5;};
+        osa{6;7;8;9;10;11;};
         vlan_tag{233;};
         mtype{256;};
         mmv{257;};
@@ -19,7 +19,7 @@ macro mme_header{
         fmi{2;};
         fmsn{3;};
     };
-    debug{1;};
+    debug{0;};
 };
 
 macro include_homeplug_mme_handler{
@@ -67,7 +67,7 @@ sm{
                     as_server{homeplug_mme_handler_as_server;};
                 };
                 encode_vlan_tag{
-                    0;
+                    homeplug_mme_handler_encode_vlan_tag;
                 };
                 on_new_client{
                     // In server mode only: fires at the very first message received by a new remote client

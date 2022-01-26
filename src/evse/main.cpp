@@ -21,7 +21,12 @@
 #include <tuple>
 #include "mme.hpp"
 
-#include "mme.hpp"
+
+namespace global_settings{
+    bool print_mme_details = false;
+    bool encode_vlan_tag = true;
+    bool big_endian = false;
+}
 
 using num_t = double;
 
@@ -134,17 +139,75 @@ std::optional<std::pair<int,addrinfo*>> setup_sctp_connection(std::string host =
 void comm_handler(std::pair<int,addrinfo*> sckt_addr, Controlpilot & ctlplt){
     auto sckt = sckt_addr.first;
     auto addr = sckt_addr.second;
+    
     auto hand_shake = [&](){
         int handshake_cmd = 0;
         sctp_sndrcvinfo sri = {0};
-        sri.sinfo_stream = 1;
+        sri.sinfo_stream = 0;
         auto r = sctp_sendmsg(sckt, &handshake_cmd,sizeof(handshake_cmd),addr->ai_addr,addr->ai_addrlen,0,0,sri.sinfo_stream,0,0 ) ;
         if (r < 0){
             auto err = errno;
             std::cerr << "*** Fatal Error:" << std::endl;
             exit(1);
         }
-        std::cout << r << std::endl;
+
+        for(;;){
+            struct sockaddr_in peeraddr;
+            constexpr int padding = 12;
+
+            char buf[mme::max_frame_size+2*padding];
+            char* mme_msg_raw;
+            socklen_t len = sizeof(peeraddr);
+            int msg_flags{};
+            auto reply_result = sctp_recvmsg(sckt,buf+padding,mme::max_frame_size, (sockaddr*)&peeraddr,&len,&sri, &msg_flags );
+            if (reply_result < 0){
+                std::cerr << "*** Connection lost." << std::endl;
+                exit(2);
+            }
+            if (!global_settings::encode_vlan_tag){
+                mme_msg_raw = buf + padding - sizeof(homeplug_mme_generic::vlan_tag);
+                memmove(mme_msg_raw, buf + padding, sizeof(homeplug_mme_header_mac_section));
+                ((homeplug_mme_generic*)mme_msg_raw)->vlan_tag = decltype(homeplug_mme_generic::vlan_tag){};
+            } else mme_msg_raw = buf + padding;
+            if (global_settings::print_mme_details){
+                std::cout << "***  MME received (" << reply_result << " bytes)\n";
+                std::cout << *((homeplug_mme_generic*)mme_msg_raw) << std::endl; 
+            }
+            auto mme_msg = (homeplug_mme_generic*)mme_msg_raw;
+            char out_buf[mme::max_frame_size+2*padding] = {0};
+            homeplug_mme_generic& out_mme = *((homeplug_mme_generic*)(out_buf + padding));
+
+            size_t payload_size {}; 
+
+            if (mme_msg->mmtype == mme::CM_SLAC_PARM_REQ){
+                 auto const& cm_slac_parm_req = mme_msg->mmdata.cm_slac_parm_req;
+                 out_mme.mmtype = mme::CM_SLAC_PARM_CNF;
+                 payload_size = sizeof(cm_slac_parm_cnf_t); 
+                 auto& cm_slac_parm_cnf = out_mme.mmdata.cm_slac_parm_cnf;
+                 cm_slac_parm_cnf.m_sound_target[0] = cm_slac_parm_cnf.m_sound_target[1] = cm_slac_parm_cnf.m_sound_target[2] = 
+                 cm_slac_parm_cnf.m_sound_target[3] = cm_slac_parm_cnf.m_sound_target[4] = cm_slac_parm_cnf.m_sound_target[5] = 0xFF;
+                 cm_slac_parm_cnf.run_id[0] = cm_slac_parm_req.run_id[0];
+                 cm_slac_parm_cnf.run_id[1] = cm_slac_parm_req.run_id[1];
+                 cm_slac_parm_cnf.run_id[2] = cm_slac_parm_req.run_id[2];
+                 cm_slac_parm_cnf.run_id[3] = cm_slac_parm_req.run_id[3];
+                 cm_slac_parm_cnf.run_id[4] = cm_slac_parm_req.run_id[4];
+                 cm_slac_parm_cnf.run_id[5] = cm_slac_parm_req.run_id[5];
+                 cm_slac_parm_cnf.run_id[6] = cm_slac_parm_req.run_id[6];
+                 cm_slac_parm_cnf.run_id[7] = cm_slac_parm_req.run_id[7];
+
+                    /*uint8_t m_sound_target[6];
+                    uint8_t num_sounds;
+                    uint8_t time_out;
+                    uint8_t resp_type;
+                    uint8_t forwarding_sta [6];
+                    uint8_t application_type;
+                    uint8_t security_type;
+                    uint8_t run_id [8];
+                    */
+            }
+            sctp_sendmsg(sckt, out_buf+padding,payload_size + sizeof(homeplug_mme_generic_header),(sockaddr*) &peeraddr,len,0,0,sri.sinfo_stream,0,0 );
+        }
+
         struct sockaddr_in peeraddr;
         char buffer[2048];
         socklen_t len = sizeof(peeraddr);
@@ -231,9 +294,27 @@ void comm_handler(std::pair<int,addrinfo*> sckt_addr, Controlpilot & ctlplt){
 
 int main(int argc, char ** argv){
     std::string host="localhost", port="56800";
+    auto read_arg_str = [&](int& i, std::string& v){
+        if (i + 1 < argc){
+         v = argv[i+1];
+         ++i;
+        }
+    };
 
-    if (argc > 1) host = argv[1];
-    if (argc > 2) port = argv[2];
+    for(int i = 0; i < argc;++i){
+        std::string arg{argv[i]};
+        if ( arg == "--host") read_arg_str(i,host);
+        else if (arg == "--port") read_arg_str(i,port);
+        else if (arg == "--no_vlan_tag") global_settings::encode_vlan_tag =  false;
+        else if (arg == "--vlan_tag") global_settings::encode_vlan_tag =  true;
+        else if (arg == "--print_mme_details") global_settings::print_mme_details = true;
+        else if (arg == "--big_endian") global_settings::big_endian = true;
+        else if (arg == "--machine_endianness") global_settings::big_endian = false;
+        else if (arg == "--verbose") {
+            global_settings::print_mme_details = true;
+        }
+    }
+
     auto r = setup_sctp_connection(host,port);
     if (!r.has_value()){
         std::cerr << "*** Fatal Error: Couldn't establish communication ." << std::endl;
