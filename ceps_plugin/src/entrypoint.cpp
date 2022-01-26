@@ -192,7 +192,7 @@ static ceps::ast::node_t plugin_send_mme(ceps::ast::node_callparameters_t params
     auto vlan_tag = header["vlan_tag"].as_int_noexcept();
     auto payload = ns["payload"];
     auto mme_type = mmtype.as_int_noexcept();
-    auto print_debug = ns["debug"].size() > 0 || true;
+    auto print_debug = ns["debug"].size() > 0;
         
     if (!mme_type.has_value()) return nullptr;
     char mme_msg_buffer[sizeof(homeplug_mme_generic)*2] = {0};

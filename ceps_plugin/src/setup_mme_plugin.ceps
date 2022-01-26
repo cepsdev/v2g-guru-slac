@@ -6,6 +6,22 @@ Event evMMEPluginInitialized;
 
 MMEPluginDebug = 0;
 
+label SETUP_MME_PLUGIN_DEF_MME_HEADER title = "Every management message comes with a header, the defaults of which are defined here.";
+
+macro mme_header{
+    header{
+        oda{0;0;0;0;0;0;};
+        osa{0;0;0;0;0;0;};
+        vlan_tag{233;};
+        mtype{256;};
+        mmv{257;};
+        mmtype{hd(arglist);};
+        fmi{2;};
+        fmsn{3;};
+    };
+    debug{1;};
+};
+
 macro include_homeplug_mme_handler{
 
 sm{
@@ -126,16 +142,7 @@ sm{
             if( argv(1).payload.header.size() == 0){
                 send_homeplug_mme(
                     mme{ 
-                        header{
-                            oda{1;2.5;"ABCDEF";80;90;100;110;120;130;};
-                            osa{2;4;6;8;10;12;};
-                            vlan_tag{233;};
-                            mtype{256;};
-                            mmv{257;};
-                            mmtype{CM_SLAC_PARM_REQ;};
-                            fmi{2;};
-                            fmsn{3;};
-                        };
+                        mme_header{CM_SLAC_PARM_REQ;};
                         argv(1).payload; 
                     } 
                 );
@@ -148,16 +155,7 @@ sm{
             if( argv(1).payload.header.size() == 0){
                 send_homeplug_mme(
                 mme{ 
-                        header{
-                            oda{1;2.5;"ABCDEF";80;90;100;110;120;130;};
-                            osa{2;4;6;8;10;12;};
-                            vlan_tag{233;};
-                            mtype{256;};
-                            mmv{257;};
-                            mmtype{CM_SLAC_PARM_CNF;};
-                            fmi{2;};
-                            fmsn{3;};
-                        };
+                        mme_header{CM_SLAC_PARM_CNF;};
                         argv(1).payload; 
                 } 
                 );
@@ -168,16 +166,7 @@ sm{
             if( argv(1).payload.header.size() == 0){
             send_homeplug_mme(
               mme{ 
-                    header{
-                        oda{1;2.5;"ABCDEF";80;90;100;110;120;130;};
-                        osa{2;4;6;8;10;12;};
-                        vlan_tag{233;};
-                        mtype{256;};
-                        mmv{257;};
-                        mmtype{CM_START_ATTEN_CHAR_IND;};
-                        fmi{2;};
-                        fmsn{3;};
-                    };
+                    mme_header{CM_START_ATTEN_CHAR_IND;};
                     argv(1).payload; 
               } 
             );}
@@ -187,16 +176,7 @@ sm{
             if( argv(1).payload.header.size() == 0){
                 send_homeplug_mme(
               mme{ 
-                    header{
-                        oda{1;2.5;"ABCDEF";80;90;100;110;120;130;};
-                        osa{2;4;6;8;10;12;};
-                        vlan_tag{233;};
-                        mtype{256;};
-                        mmv{257;};
-                        mmtype{CM_MNBC_SOUND_IND;};
-                        fmi{2;};
-                        fmsn{3;};
-                    };
+                    mme_header{CM_MNBC_SOUND_IND;};
                     argv(1).payload; 
               } 
             );
@@ -205,16 +185,7 @@ sm{
             if( argv(1).payload.header.size() == 0){
             send_homeplug_mme(
               mme{ 
-                    header{
-                        oda{1;2.5;"ABCDEF";80;90;100;110;120;130;};
-                        osa{2;4;6;8;10;12;};
-                        vlan_tag{233;};
-                        mtype{256;};
-                        mmv{257;};
-                        mmtype{CM_ATTEN_PROFILE_IND;};
-                        fmi{2;};
-                        fmsn{3;};
-                    };
+                    mme_header{CM_ATTEN_PROFILE_IND;};
                     argv(1).payload; 
               } 
             );
@@ -223,16 +194,7 @@ sm{
         on_evCM_ATTEN_CHAR_RSP{
             if( argv(1).payload.header.size() == 0){ send_homeplug_mme(
               mme{ 
-                    header{
-                        oda{1;2.5;"ABCDEF";80;90;100;110;120;130;};
-                        osa{2;4;6;8;10;12;};
-                        vlan_tag{233;};
-                        mtype{256;};
-                        mmv{257;};
-                        mmtype{CM_ATTEN_CHAR_RSP;};
-                        fmi{2;};
-                        fmsn{3;};
-                    };
+                    mme_header{CM_ATTEN_CHAR_RSP;};
                     argv(1).payload; 
               } 
             );
@@ -240,151 +202,67 @@ sm{
         }; on_evCM_VALIDATE_REQ{
             if( argv(1).payload.header.size() == 0){ send_homeplug_mme(
               mme{ 
-                    header{
-                        oda{1;2.5;"ABCDEF";80;90;100;110;120;130;};
-                        osa{2;4;6;8;10;12;};
-                        vlan_tag{233;};
-                        mtype{256;};
-                        mmv{257;};
-                        mmtype{CM_VALIDATE_REQ;};
-                        fmi{2;};
-                        fmsn{3;};
-                    };
+                    mme_header{CM_VALIDATE_REQ;};
                     argv(1).payload; 
               } 
             );}
         }; on_evCM_VALIDATE_CNF{
             if( argv(1).payload.header.size() == 0){ send_homeplug_mme(
               mme{ 
-                    header{
-                        oda{1;2.5;"ABCDEF";80;90;100;110;120;130;};
-                        osa{2;4;6;8;10;12;};
-                        vlan_tag{233;};
-                        mtype{256;};
-                        mmv{257;};
-                        mmtype{CM_VALIDATE_CNF;};
-                        fmi{2;};
-                        fmsn{3;};
-                    };
+                    mme_header{CM_VALIDATE_CNF;};
                     argv(1).payload; 
               } 
             );}
         }; on_evCM_SLAC_MATCH_REQ{
             if( argv(1).payload.header.size() == 0){ send_homeplug_mme(
               mme{ 
-                    header{
-                        oda{1;2.5;"ABCDEF";80;90;100;110;120;130;};
-                        osa{2;4;6;8;10;12;};
-                        vlan_tag{233;};
-                        mtype{256;};
-                        mmv{257;};
-                        mmtype{CM_SLAC_MATCH_REQ;};
-                        fmi{2;};
-                        fmsn{3;};
-                    };
+                    mme_header{CM_SLAC_MATCH_REQ;};
                     argv(1).payload; 
               } 
             );}
         }; on_evCM_SLAC_MATCH_CNF{
             if( argv(1).payload.header.size() == 0){ send_homeplug_mme(
               mme{ 
-                    header{
-                        oda{1;2.5;"ABCDEF";80;90;100;110;120;130;};
-                        osa{2;4;6;8;10;12;};
-                        vlan_tag{233;};
-                        mtype{256;};
-                        mmv{257;};
-                        mmtype{CM_SLAC_MATCH_CNF;};
-                        fmi{2;};
-                        fmsn{3;};
-                    };
+                    mme_header{CM_SLAC_MATCH_CNF;};
                     argv(1).payload; 
               } 
             ); }
         }; on_evCM_SET_KEY_REQ{
             if( argv(1).payload.header.size() == 0){ send_homeplug_mme(
               mme{ 
-                    header{
-                        oda{1;2.5;"ABCDEF";80;90;100;110;120;130;};
-                        osa{2;4;6;8;10;12;};
-                        vlan_tag{233;};
-                        mtype{256;};
-                        mmv{257;};
-                        mmtype{CM_SET_KEY_REQ;};
-                        fmi{2;};
-                        fmsn{3;};
-                    };
+                    mme_header{CM_SET_KEY_REQ;};
                     argv(1).payload; 
               } 
             );}
         }; on_evCM_SET_KEY_CNF{
             if( argv(1).payload.header.size() == 0){send_homeplug_mme(
               mme{ 
-                    header{
-                        oda{1;2.5;"ABCDEF";80;90;100;110;120;130;};
-                        osa{2;4;6;8;10;12;};
-                        vlan_tag{233;};
-                        mtype{256;};
-                        mmv{257;};
-                        mmtype{CM_SET_KEY_CNF;};
-                        fmi{2;};
-                        fmsn{3;};
-                    };
+                    mme_header{CM_SET_KEY_CNF;};
                     argv(1).payload; 
               } 
             );}
         }; on_evCM_AMP_MAP_REQ{
             if( argv(1).payload.header.size() == 0){send_homeplug_mme(
               mme{ 
-                    header{
-                        oda{1;2.5;"ABCDEF";80;90;100;110;120;130;};
-                        osa{2;4;6;8;10;12;};
-                        vlan_tag{233;};
-                        mtype{256;};
-                        mmv{257;};
-                        mmtype{CM_AMP_MAP_REQ;};
-                        fmi{2;};
-                        fmsn{3;};
-                    };
+                    mme_header{CM_AMP_MAP_REQ;};
                     argv(1).payload; 
               } 
             );}
         }; on_evCM_AMP_MAP_CNF{
             if( argv(1).payload.header.size() == 0){send_homeplug_mme(
               mme{ 
-                    header{
-                        oda{1;2.5;"ABCDEF";80;90;100;110;120;130;};
-                        osa{2;4;6;8;10;12;};
-                        vlan_tag{233;};
-                        mtype{256;};
-                        mmv{257;};
-                        mmtype{CM_AMP_MAP_CNF;};
-                        fmi{2;};
-                        fmsn{3;};
-                    };
+                    mme_header{CM_AMP_MAP_CNF;};
                     argv(1).payload; 
               } 
             );}
         }; on_evCM_ATTEN_CHAR_IND{
             if( argv(1).payload.header.size() == 0){send_homeplug_mme(
               mme{ 
-                    header{
-                        oda{1;2.5;"ABCDEF";80;90;100;110;120;130;};
-                        osa{2;4;6;8;10;12;};
-                        vlan_tag{233;};
-                        mtype{256;};
-                        mmv{257;};
-                        mmtype{CM_ATTEN_CHAR_IND;};
-                        fmi{2;};
-                        fmsn{3;};
-                    };
+                    mme_header{CM_ATTEN_CHAR_IND;};
                     argv(1).payload; 
               } 
             );}
         };
-
-
-
     };
 
     t{Initial;WaitForMMEPluginInitialized;};

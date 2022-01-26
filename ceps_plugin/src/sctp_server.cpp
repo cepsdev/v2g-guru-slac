@@ -124,7 +124,6 @@ mme4ceps_plugin::result_t mme4ceps_plugin::start_sctp_server(std::string port){
     std::thread reader_thread {
         [=,this]()
         {
-            std::cerr << "reader_thread\n\n" << std::endl;
             on_exit_cleanup on_exit{ [&] {if (addrinfo_res != nullptr) freeaddrinfo(addrinfo_res);}};
             socklen_t len = it->ai_addrlen;
             char readbuf[2048];
@@ -135,10 +134,8 @@ mme4ceps_plugin::result_t mme4ceps_plugin::start_sctp_server(std::string port){
                 memset(&client,0,sizeof(client));
                 memset(&sndrcvinfo,0,sizeof(sndrcvinfo));
                 int msg_flags{};
-                std::cerr << "reader_thread:sctp_recvmsg\n\n" << std::endl;
 
                 auto rd_sz = sctp_recvmsg(listenfd,readbuf,sizeof(readbuf),(sockaddr*)&client,&len,&sndrcvinfo,&msg_flags);
-                std::cerr << "reader_thread:sctp_recvmsg:" << rd_sz << "bytes sndrcvinfo.sinfo_stream="<< sndrcvinfo.sinfo_stream  << "\n\n" << std::endl;
 
                 if (rd_sz > 0 && sndrcvinfo.sinfo_stream != 0){
                     std::cerr << " read " << rd_sz <<" bytes sndrcvinfo.sinfo_stream =" << sndrcvinfo.sinfo_stream << std::endl;
