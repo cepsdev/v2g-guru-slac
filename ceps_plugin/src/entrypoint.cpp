@@ -48,6 +48,8 @@ SOFTWARE.
 static Ism4ceps_plugin_interface* plugin_master = nullptr;
 static mme4ceps_plugin plugn;
 
+
+
 static ceps::ast::node_t plugin_entrypoint_route_mme(ceps::ast::node_callparameters_t params){
     auto eval_ceps_handler = [&](std::vector<ceps::ast::node_t> v){
       for(auto e: v){
@@ -63,13 +65,18 @@ static ceps::ast::node_t plugin_entrypoint_route_mme(ceps::ast::node_callparamet
       }
     };
     auto t = get_first_child(params);
-    if (t) plugn.set_associated_ceps_block(t->clone());
+    ceps::ast::node_t ceps_script_clone{};
+    if (t) plugn.set_associated_ceps_block(ceps_script_clone = t->clone());
     auto on_initplugin =  ceps::ast::Nodeset{t}["setup"]["on_initplugin"].nodes();
     eval_ceps_handler(on_initplugin);
 
     //start_sctp_server
     auto comm = ceps::ast::Nodeset{t}["setup"]["communication"];
     auto err_ev_ns = ceps::ast::Nodeset{t}["setup"]["on_error"].nodes();
+    auto on_new_client = ceps::ast::Nodeset{ceps_script_clone}["setup"]["on_new_client"].nodes();
+    plugn.on_client_connect = on_new_client;
+
+  
     std::string err_ev;
     if (err_ev_ns.size() == 1 && ceps::ast::is_a_symbol(err_ev_ns[0]))
      err_ev = ceps::ast::name(ceps::ast::as_symbol_ref(err_ev_ns[0]));

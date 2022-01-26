@@ -1,7 +1,22 @@
 include_homeplug_mme_handler{};
+Event evMMEConnected;
+Event evMatchingProcessStartTrigger;
+
+sm{
+    WaitForPluginReady;
+    states{Initial;Waiting;Ready;};
+    Actions{
+        doGetReady{
+            {
+                evMatchingProcessStartTrigger;
+            }
+        };
+    };
+    t{Initial;Waiting;};
+    t{Waiting;Ready;evMMEConnected;doGetReady;};
+};
 
 Simulation{
-    Event evMatchingProcessStartTrigger;
+    Start{WaitForPluginReady;};
     run_include_homeplug_mme_handler{};
-    start_timer(10.0*s,evMatchingProcessStartTrigger);
 };

@@ -27,6 +27,20 @@ SOFTWARE.
 #include "mme4ceps.hpp"
 #include "ceps_ast.hh"
 
+void mme4ceps_plugin::execute_ceps(ceps::ast::Nodeset ns){
+  for(auto e: ns.nodes()){
+      std::string sym_name;
+      std::string kind_name; 
+      ceps::ast::nodes_t args;
+      if (is_a_symbol_with_arguments(e,sym_name,kind_name,args)){
+          if (kind_name == "Event") ceps_engine->queue_internal_event(sym_name,args);
+      } else if (ceps::ast::is_a_symbol(e)){
+          auto& sym = ceps::ast::as_symbol_ref(e);
+          if (ceps::ast::kind(sym) == "Event") ceps_engine->queue_event(ceps::ast::name(sym),{}); 
+      }
+  }
+}
+
 void mme4ceps_plugin::init(){
   mme_msg_to_symbol_table_setup_routines = 
                   { 

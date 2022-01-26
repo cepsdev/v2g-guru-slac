@@ -57,7 +57,13 @@ class EV {
 };
 
 void EV::operator() (){
-            sleep(5);
+            int new_session_cmd = 0;
+            auto r = sctp_sendmsg(  commfd, 
+                                    &new_session_cmd,
+                                    sizeof(new_session_cmd),
+                                    addrinfo_used->ai_addr,addrinfo_used->ai_addrlen,0,0,0,0,0);
+
+            sleep(50);
             std::thread reader{&EV::msg_reader,this};
 
             homeplug_mme_generic mme{0};
@@ -67,7 +73,7 @@ void EV::operator() (){
             mme.mmdata.cm_slac_parm_req.run_id[2] = 201;
             
 
-            auto r = sctp_sendmsg(commfd, &mme,std::max( (size_t)60,sizeof(homeplug_mme_generic_header)+sizeof(cm_slac_parm_req_t)),addrinfo_used->ai_addr,addrinfo_used->ai_addrlen,0,0,0,0,0 ) ;
+            r = sctp_sendmsg(commfd, &mme,std::max( (size_t)60,sizeof(homeplug_mme_generic_header)+sizeof(cm_slac_parm_req_t)),addrinfo_used->ai_addr,addrinfo_used->ai_addrlen,0,0,0,0,0 ) ;
             sleep(10);
             mme.mmdata.cm_slac_parm_req.run_id[0] = 101;
             mme.mmdata.cm_slac_parm_req.run_id[1] = 202;

@@ -87,6 +87,8 @@ class mme4ceps_plugin{
 
     ceps::parser_env::Scope scope;    
     ceps::ast::node_t associated_ceps_block = nullptr;
+    ceps::ast::Nodeset on_client_connect; 
+
     Ism4ceps_plugin_interface* ceps_engine = nullptr;
     Ism4ceps_plugin_interface* plugin_master = nullptr;
     int commfd = -1;
@@ -115,6 +117,8 @@ class mme4ceps_plugin{
      ***/
     void set_associated_ceps_block(ceps::ast::node_t v);
     void handle_homeplug_mme(homeplug_mme_generic*, size_t mme_size);
+
+    void execute_ceps(ceps::ast::Nodeset);
 
     result_t start_sctp_server(std::string port);
 };

@@ -56,7 +56,7 @@ template<typename T>
 
 mme4ceps_plugin::result_t mme4ceps_plugin::start_sctp_server(std::string port){
     
-    std::cerr << "start_sctp_server("<< port <<")" << std::endl;
+    //std::cerr << "start_sctp_server("<< port <<")" << std::endl;
 
     bool constexpr debug {false};
     addrinfo hints = {0}, *addrinfo_res = nullptr;
@@ -142,11 +142,16 @@ mme4ceps_plugin::result_t mme4ceps_plugin::start_sctp_server(std::string port){
                     int handshake_cmd = 0;
                     sctp_sendmsg(listenfd, &handshake_cmd,sizeof(handshake_cmd),(sockaddr*) &client,len,0,0,sndrcvinfo.sinfo_stream,0,0 ) ;
                 } else if(rd_sz > 0) {
+                    bool new_client = false;
                     {
                         std::lock_guard g{commfd_mtx};
+                        new_client = client.sin_port != last_client.sin_port || client.sin_addr.s_addr != last_client.sin_addr.s_addr;
                         last_client = client;
                         last_client_len = len;
                     } 
+                    if (new_client && !on_client_connect.empty())
+                      execute_ceps(on_client_connect);
+
                     this->handle_homeplug_mme( (homeplug_mme_generic*) readbuf,rd_sz);
                 }
             }
