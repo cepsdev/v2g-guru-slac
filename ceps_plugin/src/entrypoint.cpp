@@ -76,6 +76,13 @@ static ceps::ast::node_t plugin_entrypoint_route_mme(ceps::ast::node_callparamet
     auto on_new_client = ceps::ast::Nodeset{ceps_script_clone}["setup"]["on_new_client"].nodes();
     plugn.on_client_connect = on_new_client;
 
+    {
+      // exclude/include vlan_tag 
+      auto encode_vlan_tag = ceps::ast::Nodeset{ceps_script_clone}["setup"]["encode_vlan_tag"];
+      auto r = encode_vlan_tag.as_int_noexcept();
+      if (r.has_value())
+       plugn.encode_vlan_tag = r.value();
+    }
   
     std::string err_ev;
     if (err_ev_ns.size() == 1 && ceps::ast::is_a_symbol(err_ev_ns[0]))
@@ -202,7 +209,7 @@ static ceps::ast::node_t plugin_send_mme(ceps::ast::node_callparameters_t params
     auto print_debug = ns["debug"].size() > 0;
         
     if (!mme_type.has_value()) return nullptr;
-    char mme_msg_buffer[sizeof(homeplug_mme_generic)*2] = {0};
+    char mme_msg_buffer[mme::max_frame_size] = {0};
     homeplug_mme_generic& mme_msg = *((homeplug_mme_generic*)mme_msg_buffer);
     auto payload_size = sizeof(homeplug_mme_generic) - sizeof(homeplug_mme_generic_header);
     auto payload_bytes_written = 0;
@@ -263,11 +270,23 @@ static ceps::ast::node_t plugin_send_mme(ceps::ast::node_callparameters_t params
     if (commfd < 0) {
       return nullptr;
     }
-    //sctp_sndrcvinfo sinfo = {0};
     uint32_t flags{0};
-
-    auto r = sctp_sendmsg(commfd, mme_msg_buffer, std::max((size_t)60 , (size_t)payload_bytes_written + sizeof(homeplug_mme_generic_header)),(sockaddr*) &last_client,last_client_len,0 , flags, 0,0,0 );
-    //auto err = errno;
+    if (plugn.encode_vlan_tag){
+      auto r = sctp_sendmsg(commfd, 
+                            mme_msg_buffer, 
+                            std::max((size_t)60, 
+                            (size_t)payload_bytes_written + sizeof(homeplug_mme_generic_header)),
+                            (sockaddr*) &last_client,
+                            last_client_len, 0, flags, 0, 0, 0);
+    } else {
+      memmove(mme_msg_buffer + sizeof(homeplug_mme_generic::vlan_tag), mme_msg_buffer, sizeof(homeplug_mme_header_mac_section));
+      auto r = sctp_sendmsg(commfd, 
+                            mme_msg_buffer + sizeof(homeplug_mme_generic::vlan_tag), 
+                            std::max((size_t)60, 
+                            (size_t)payload_bytes_written + sizeof(homeplug_mme_generic_header) - sizeof(homeplug_mme_generic::vlan_tag)),
+                            (sockaddr*) &last_client,
+                            last_client_len, 0, flags, 0, 0, 0);
+    }
     return nullptr;
 }
 

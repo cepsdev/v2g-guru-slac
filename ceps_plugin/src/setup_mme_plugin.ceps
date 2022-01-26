@@ -66,6 +66,9 @@ sm{
                     port{homeplug_mme_handler_sctp_port;};
                     as_server{homeplug_mme_handler_as_server;};
                 };
+                encode_vlan_tag{
+                    0;
+                };
                 on_new_client{
                     // In server mode only: fires at the very first message received by a new remote client
                     Event evMMEConnected;

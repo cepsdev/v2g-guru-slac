@@ -65,6 +65,8 @@ namespace mme{
       uint16_t constexpr CM_SET_KEY_CNF =  CM_SET_KEY_BASE | CNF;
       uint16_t constexpr CM_AMP_MAP_REQ = CM_AMP_MAP_BASE | REQ;
       uint16_t constexpr CM_AMP_MAP_CNF = CM_AMP_MAP_BASE | CNF;
+
+      unsigned int constexpr max_frame_size = 2048;
 }
 
 struct __attribute__((__packed__))  cm_slac_parm_req_t {
@@ -202,6 +204,11 @@ struct __attribute__((__packed__))  homeplug_mme_generic_header{
   uint16_t mmtype;
   uint8_t fmi;
   uint8_t fmsn;
+};
+
+struct __attribute__((__packed__))  homeplug_mme_header_mac_section{
+  char oda[6];
+  char osa[6];
 };
 
 struct __attribute__((__packed__))  homeplug_mme_generic{

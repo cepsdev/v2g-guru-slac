@@ -126,7 +126,17 @@ mme4ceps_plugin::result_t mme4ceps_plugin::start_sctp_server(std::string port){
         {
             on_exit_cleanup on_exit{ [&] {if (addrinfo_res != nullptr) freeaddrinfo(addrinfo_res);}};
             socklen_t len = it->ai_addrlen;
-            char readbuf[2048];
+            
+            constexpr unsigned int space_before = 16;
+            constexpr unsigned int space_after = 16;
+
+            char recvbuf[mme::max_frame_size + space_before + space_after];
+            char * readbuf;
+            // vlan_tag may be missing, we need a little space to shift the data in the right position. Rest of the
+            // program assumes header with vlan_tag field. recvbuf holds the data, readbuf is a pointer which points
+            // to a consolidated view of the data and serves as the mme result given to subsequentially called routines. 
+            // The moving is done further below in (*)
+
             for(;;){
                 sockaddr_in client {0};
                 len = sizeof(sockaddr_in);
@@ -135,8 +145,15 @@ mme4ceps_plugin::result_t mme4ceps_plugin::start_sctp_server(std::string port){
                 memset(&sndrcvinfo,0,sizeof(sndrcvinfo));
                 int msg_flags{};
 
-                auto rd_sz = sctp_recvmsg(listenfd,readbuf,sizeof(readbuf),(sockaddr*)&client,&len,&sndrcvinfo,&msg_flags);
-
+                auto rd_sz = sctp_recvmsg(listenfd,recvbuf+space_before,mme::max_frame_size,(sockaddr*)&client,&len,&sndrcvinfo,&msg_flags);
+                if (encode_vlan_tag){
+                    readbuf = recvbuf+space_before;
+                } else {
+                    // (*) Moving a little bit to make space for a default initialized vlan tag. 
+                    readbuf = recvbuf+space_before - sizeof(homeplug_mme_generic::vlan_tag);
+                    memmove(readbuf,recvbuf,sizeof(homeplug_mme_header_mac_section));
+                    ((homeplug_mme_generic_header*)readbuf)->vlan_tag = decltype( homeplug_mme_generic::vlan_tag){};  
+                }
                 if (rd_sz > 0 && sndrcvinfo.sinfo_stream != 0){
                     std::cerr << " read " << rd_sz <<" bytes sndrcvinfo.sinfo_stream =" << sndrcvinfo.sinfo_stream << std::endl;
                     int handshake_cmd = 0;
