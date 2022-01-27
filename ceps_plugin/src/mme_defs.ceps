@@ -86,7 +86,8 @@ Event   evCM_SLAC_PARM_REQ,
         evCM_AMP_MAP_CNF,
         evCM_ATTEN_CHAR_IND;
 
-val homeplug_mme_handler_run_tests = 0;
-val homeplug_mme_handler_sctp_port = "56800";
-val homeplug_mme_handler_as_server = 1;
-val homeplug_mme_handler_encode_vlan_tag = 1;
+val homeplug_mme_handler_run_tests          = 0;
+val homeplug_mme_handler_sctp_port          = "56800";
+val homeplug_mme_handler_as_server          = 1;
+val homeplug_mme_handler_encode_vlan_tag    = 1;
+val homeplug_mme_print_sent_mme             = 0;

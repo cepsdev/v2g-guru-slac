@@ -19,7 +19,7 @@ macro mme_header{
         fmi{2;};
         fmsn{3;};
     };
-    debug{0;};
+    debug{homeplug_mme_print_sent_mme;};
 };
 
 macro include_homeplug_mme_handler{

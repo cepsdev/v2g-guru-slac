@@ -206,7 +206,10 @@ static ceps::ast::node_t plugin_send_mme(ceps::ast::node_callparameters_t params
     auto vlan_tag = header["vlan_tag"].as_int_noexcept();
     auto payload = ns["payload"];
     auto mme_type = mmtype.as_int_noexcept();
-    auto print_debug = ns["debug"].size() > 0;
+    auto print_debug_ns = ns["debug"]; 
+    auto print_debug = print_debug_ns.size() > 0 && 
+                       ceps::ast::is<ceps::ast::Ast_node_kind::int_literal>(print_debug_ns.nodes()[0]) && 
+                       0 != ceps::ast::value(ceps::ast::as_int_ref(print_debug_ns.nodes()[0]));
         
     if (!mme_type.has_value()) return nullptr;
     char mme_msg_buffer[mme::max_frame_size] = {0};
