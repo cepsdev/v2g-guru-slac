@@ -226,6 +226,7 @@ static void write_mme_header(ceps::ast::node_t msg, homeplug_mme_generic& mme_ms
    if(mtype.has_value()) mme_msg.mtype = cov_endianess_narrow<Endianess::machine,decltype(mme_msg.mtype),int>(mtype.value());
   }
 
+  
   if(fmi.has_value()) mme_msg.fmi = fmi.value();
   if(fmsn.has_value()) mme_msg.fmsn = fmsn.value();
   if(mmv.has_value()) mme_msg.mmv = mmv.value();
@@ -255,33 +256,33 @@ static ceps::ast::node_t plugin_send_mme(ceps::ast::node_callparameters_t params
     auto payload_bytes_written = 0;
 
     if (mme_msg.mmtype == mme::CM_SLAC_PARM_REQ)
-     payload_bytes_written = write(payload.nodes(), mme_msg.mmdata.cm_slac_parm_req, payload_size);
+     payload_bytes_written = write(payload.nodes(), mme_msg.mmdata.cm_slac_parm_req, payload_size, plugn.encode_big_endianess ? Endianess::big : Endianess:: machine);
     else if (mme_msg.mmtype == mme::CM_SLAC_PARM_CNF)
-     payload_bytes_written = write(payload.nodes(), mme_msg.mmdata.cm_slac_parm_cnf, payload_size);
+     payload_bytes_written = write(payload.nodes(), mme_msg.mmdata.cm_slac_parm_cnf, payload_size, plugn.encode_big_endianess ? Endianess::big : Endianess:: machine);
     else if (mme_msg.mmtype == mme::CM_START_ATTEN_CHAR_IND)
-     payload_bytes_written = write(payload.nodes(), mme_msg.mmdata.cm_start_atten_char_ind, payload_size);
+     payload_bytes_written = write(payload.nodes(), mme_msg.mmdata.cm_start_atten_char_ind, payload_size, plugn.encode_big_endianess ? Endianess::big : Endianess:: machine);
     else if (mme_msg.mmtype == mme::CM_MNBC_SOUND_IND)
-     payload_bytes_written = write(payload.nodes(), mme_msg.mmdata.cm_mnbc_sound_ind, payload_size);
+     payload_bytes_written = write(payload.nodes(), mme_msg.mmdata.cm_mnbc_sound_ind, payload_size, plugn.encode_big_endianess ? Endianess::big : Endianess:: machine);
     else if (mme_msg.mmtype == mme::CM_ATTEN_CHAR_IND)
-     payload_bytes_written = write(payload.nodes(), mme_msg.mmdata.cm_atten_char_ind, payload_size);
+     payload_bytes_written = write(payload.nodes(), mme_msg.mmdata.cm_atten_char_ind, payload_size, plugn.encode_big_endianess ? Endianess::big : Endianess:: machine);
     else if (mme_msg.mmtype == mme::CM_ATTEN_CHAR_RSP)
-     payload_bytes_written = write(payload.nodes(), mme_msg.mmdata.cm_atten_char_rsp, payload_size);
+     payload_bytes_written = write(payload.nodes(), mme_msg.mmdata.cm_atten_char_rsp, payload_size, plugn.encode_big_endianess ? Endianess::big : Endianess:: machine);
     else if (mme_msg.mmtype == mme::CM_ATTEN_PROFILE_IND)
-     payload_bytes_written = write(payload.nodes(), mme_msg.mmdata.cm_atten_profile_ind, payload_size);
+     payload_bytes_written = write(payload.nodes(), mme_msg.mmdata.cm_atten_profile_ind, payload_size, plugn.encode_big_endianess ? Endianess::big : Endianess:: machine);
     else if (mme_msg.mmtype == mme::CM_VALIDATE_REQ)
-     payload_bytes_written = write(payload.nodes(), mme_msg.mmdata.cm_validate_req, payload_size);
+     payload_bytes_written = write(payload.nodes(), mme_msg.mmdata.cm_validate_req, payload_size, plugn.encode_big_endianess ? Endianess::big : Endianess:: machine);
     else if (mme_msg.mmtype == mme::CM_VALIDATE_CNF)
-     payload_bytes_written = write(payload.nodes(), mme_msg.mmdata.cm_validate_cnf, payload_size);
+     payload_bytes_written = write(payload.nodes(), mme_msg.mmdata.cm_validate_cnf, payload_size, plugn.encode_big_endianess ? Endianess::big : Endianess:: machine);
     else if (mme_msg.mmtype == mme::CM_SLAC_MATCH_REQ)
-     payload_bytes_written = write(payload.nodes(), mme_msg.mmdata.cm_slac_match_req, payload_size);
+     payload_bytes_written = write(payload.nodes(), mme_msg.mmdata.cm_slac_match_req, payload_size, plugn.encode_big_endianess ? Endianess::big : Endianess:: machine);
     else if (mme_msg.mmtype == mme::CM_SLAC_MATCH_CNF)
-     payload_bytes_written = write(payload.nodes(), mme_msg.mmdata.cm_slac_match_cnf, payload_size);
+     payload_bytes_written = write(payload.nodes(), mme_msg.mmdata.cm_slac_match_cnf, payload_size, plugn.encode_big_endianess ? Endianess::big : Endianess:: machine);
     else if (mme_msg.mmtype == mme::CM_SET_KEY_REQ)
-     payload_bytes_written = write(payload.nodes(), mme_msg.mmdata.cm_set_key_req, payload_size);
+     payload_bytes_written = write(payload.nodes(), mme_msg.mmdata.cm_set_key_req, payload_size, plugn.encode_big_endianess ? Endianess::big : Endianess:: machine);
     else if (mme_msg.mmtype == mme::CM_AMP_MAP_REQ)
-     payload_bytes_written = write(payload.nodes(), mme_msg.mmdata.cm_amp_map_req, payload_size);
+     payload_bytes_written = write(payload.nodes(), mme_msg.mmdata.cm_amp_map_req, payload_size, plugn.encode_big_endianess ? Endianess::big : Endianess:: machine);
     else if (mme_msg.mmtype == mme::CM_AMP_MAP_CNF)
-     payload_bytes_written = write(payload.nodes(), mme_msg.mmdata.cm_amp_map_cnf, payload_size);
+     payload_bytes_written = write(payload.nodes(), mme_msg.mmdata.cm_amp_map_cnf, payload_size, plugn.encode_big_endianess ? Endianess::big : Endianess:: machine);
     
     if (print_debug) 
       std::cout << mme_msg << std::endl;

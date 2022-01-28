@@ -24,7 +24,47 @@ SOFTWARE.
 
 #include "ceps2mme.hpp"
 
-size_t write(std::vector<ceps::ast::Nodebase_ptr> const & v, cm_slac_parm_req_t& msg, size_t size){
+/*
+uint16 
+
+*/
+
+size_t write_uint16(ceps::ast::Struct_ptr strct,std::uint16_t* pv, Endianess endianess) 
+{
+  using namespace ceps::ast;
+  auto wr = [&](node_t nd,std::uint16_t* p){
+    if (is<ceps::ast::Ast_node_kind::int_literal>(nd)){
+      *p = value(as_int_ref(nd));
+    } else if (is<ceps::ast::Ast_node_kind::long_literal>(nd)){
+      *p = value(as_int64_ref(nd));
+    } else if (is<ceps::ast::Ast_node_kind::float_literal>(nd)){
+      *p = value(as_double_ref(nd));
+    } else if (is<ceps::ast::Ast_node_kind::string_literal>(nd)){
+      auto const & v = value(as_string_ref(nd));
+      if (v.length())
+       * ((char*)pv) = v[0];
+      if (v.length() > 1)
+       * ( ((char*)pv) + 1) = v[1];
+    }
+    return sizeof(std::uint16_t);
+  };
+
+  size_t written = 0;
+  if (!num_of_children(*strct)) return written;
+  if ( 1 == num_of_children(*strct)) {
+    written = wr(children(*strct)[0], pv);
+    if (endianess == Endianess::big) *pv = htobe16(*pv);
+  } else {
+    std::uint16_t t1{},t2{};
+    written = wr(children(*strct)[0], &t1);
+    wr(children(*strct)[1], &t2 );
+    *pv = (t1 & 0xFF) | (t2 << 8);
+  }
+  return written;
+}
+
+
+size_t write(std::vector<ceps::ast::Nodebase_ptr> const & v, cm_slac_parm_req_t& msg, size_t size, Endianess endianess){
   size_t written = 0;
   for(auto e : v){
     if (!ceps::ast::is<ceps::ast::Ast_node_kind::structdef>(e)) continue;
@@ -41,7 +81,7 @@ size_t write(std::vector<ceps::ast::Nodebase_ptr> const & v, cm_slac_parm_req_t&
   return written;
 } 
 
-size_t write(std::vector<ceps::ast::Nodebase_ptr> const & v, cm_slac_parm_cnf_t& msg, size_t size){
+size_t write(std::vector<ceps::ast::Nodebase_ptr> const & v, cm_slac_parm_cnf_t& msg, size_t size, Endianess endianess){
   size_t written = 0;
   for(auto e : v){
     if (!ceps::ast::is<ceps::ast::Ast_node_kind::structdef>(e)) continue;
@@ -68,7 +108,7 @@ size_t write(std::vector<ceps::ast::Nodebase_ptr> const & v, cm_slac_parm_cnf_t&
   return written;
 } 
 
-size_t write(std::vector<ceps::ast::Nodebase_ptr> const & v, cm_start_atten_char_ind_t& msg, size_t size){
+size_t write(std::vector<ceps::ast::Nodebase_ptr> const & v, cm_start_atten_char_ind_t& msg, size_t size, Endianess endianess){
   size_t written = 0;
   for(auto e : v){
     if (!ceps::ast::is<ceps::ast::Ast_node_kind::structdef>(e)) continue;
@@ -95,7 +135,7 @@ size_t write(std::vector<ceps::ast::Nodebase_ptr> const & v, cm_start_atten_char
 } 
 
 
-size_t write(std::vector<ceps::ast::Nodebase_ptr> const & v, cm_atten_char_ind_t& msg, size_t size){
+size_t write(std::vector<ceps::ast::Nodebase_ptr> const & v, cm_atten_char_ind_t& msg, size_t size, Endianess endianess){
   size_t written = 0;
   for(auto e : v){
     if (!ceps::ast::is<ceps::ast::Ast_node_kind::structdef>(e)) continue;
@@ -122,7 +162,7 @@ size_t write(std::vector<ceps::ast::Nodebase_ptr> const & v, cm_atten_char_ind_t
   return written;
 } 
 
-size_t write(std::vector<ceps::ast::Nodebase_ptr> const & v, cm_mnbc_sound_ind_t& msg, size_t size){
+size_t write(std::vector<ceps::ast::Nodebase_ptr> const & v, cm_mnbc_sound_ind_t& msg, size_t size, Endianess endianess){
   size_t written = 0;
   for(auto e : v){
     if (!ceps::ast::is<ceps::ast::Ast_node_kind::structdef>(e)) continue;
@@ -146,7 +186,7 @@ size_t write(std::vector<ceps::ast::Nodebase_ptr> const & v, cm_mnbc_sound_ind_t
   return written;
 } 
 
-size_t write(std::vector<ceps::ast::Nodebase_ptr> const & v, cm_atten_char_rsp_t& msg, size_t size){
+size_t write(std::vector<ceps::ast::Nodebase_ptr> const & v, cm_atten_char_rsp_t& msg, size_t size, Endianess endianess){
   size_t written = 0;
   for(auto e : v){
     if (!ceps::ast::is<ceps::ast::Ast_node_kind::structdef>(e)) continue;
@@ -172,7 +212,7 @@ size_t write(std::vector<ceps::ast::Nodebase_ptr> const & v, cm_atten_char_rsp_t
 } 
 
 
-size_t write(std::vector<ceps::ast::Nodebase_ptr> const & v, cm_atten_profile_ind_t& msg, size_t size){
+size_t write(std::vector<ceps::ast::Nodebase_ptr> const & v, cm_atten_profile_ind_t& msg, size_t size, Endianess endianess){
   size_t written = 0;
   for(auto e : v){
     if (!ceps::ast::is<ceps::ast::Ast_node_kind::structdef>(e)) continue;
@@ -189,7 +229,7 @@ size_t write(std::vector<ceps::ast::Nodebase_ptr> const & v, cm_atten_profile_in
   return written;
 } 
 
-size_t write(std::vector<ceps::ast::Nodebase_ptr> const & v, cm_validate_req_t& msg, size_t size){
+size_t write(std::vector<ceps::ast::Nodebase_ptr> const & v, cm_validate_req_t& msg, size_t size, Endianess endianess){
   size_t written = 0;
   for(auto e : v){
     if (!ceps::ast::is<ceps::ast::Ast_node_kind::structdef>(e)) continue;
@@ -207,7 +247,7 @@ size_t write(std::vector<ceps::ast::Nodebase_ptr> const & v, cm_validate_req_t& 
 } 
 
 
-size_t write(std::vector<ceps::ast::Nodebase_ptr> const & v, cm_validate_cnf_t& msg, size_t size){
+size_t write(std::vector<ceps::ast::Nodebase_ptr> const & v, cm_validate_cnf_t& msg, size_t size, Endianess endianess){
   size_t written = 0;
   for(auto e : v){
     if (!ceps::ast::is<ceps::ast::Ast_node_kind::structdef>(e)) continue;
@@ -225,7 +265,7 @@ size_t write(std::vector<ceps::ast::Nodebase_ptr> const & v, cm_validate_cnf_t& 
 } 
 
 
-size_t write(std::vector<ceps::ast::Nodebase_ptr> const & v, cm_slac_match_req_t& msg, size_t size){
+size_t write(std::vector<ceps::ast::Nodebase_ptr> const & v, cm_slac_match_req_t& msg, size_t size, Endianess endianess){
   size_t written = 0;
   for(auto e : v){
     if (!ceps::ast::is<ceps::ast::Ast_node_kind::structdef>(e)) continue;
@@ -236,8 +276,12 @@ size_t write(std::vector<ceps::ast::Nodebase_ptr> const & v, cm_slac_match_req_t
      written += write_bytes(&strct,((uint8_t*)&msg.application_type),((uint8_t*)&msg.application_type) + sizeof(msg.application_type));
     else if (name == "security_type")
      written += write_bytes(&strct,((uint8_t*)&msg.security_type),((uint8_t*)&msg.security_type) + sizeof(msg.security_type));
-    else if (name == "mvflength")
-     written += write_bytes(&strct,((uint8_t*)&msg.mvflength),((uint8_t*)&msg.mvflength) + sizeof(msg.mvflength));    
+    else if (name == "mvflength"){
+      //written += write_bytes(&strct,((uint8_t*)&msg.mvflength),((uint8_t*)&msg.mvflength) + sizeof(msg.mvflength));
+      std::uint16_t t;
+      written += write_uint16(&strct,&t,endianess);
+      msg.mvflength = t;  
+    }
     else if (name == "pev_id") 
      written += write_bytes(&strct,((uint8_t*)&msg.pev_id),((uint8_t*)&msg.pev_id) + sizeof(msg.pev_id));
     else if (name == "pev_mac")
@@ -253,7 +297,7 @@ size_t write(std::vector<ceps::ast::Nodebase_ptr> const & v, cm_slac_match_req_t
 } 
 
 
-size_t write(std::vector<ceps::ast::Nodebase_ptr> const & v, cm_slac_match_cnf_t& msg, size_t size){
+size_t write(std::vector<ceps::ast::Nodebase_ptr> const & v, cm_slac_match_cnf_t& msg, size_t size, Endianess endianess){
   size_t written = 0;
   for(auto e : v){
     if (!ceps::ast::is<ceps::ast::Ast_node_kind::structdef>(e)) continue;
@@ -264,8 +308,12 @@ size_t write(std::vector<ceps::ast::Nodebase_ptr> const & v, cm_slac_match_cnf_t
      written += write_bytes(&strct,((uint8_t*)&msg.application_type),((uint8_t*)&msg.application_type) + sizeof(msg.application_type));
     else if (name == "security_type")
      written += write_bytes(&strct,((uint8_t*)&msg.security_type),((uint8_t*)&msg.security_type) + sizeof(msg.security_type));
-    else if (name == "mvflength")
-     written += write_bytes(&strct,((uint8_t*)&msg.mvflength),((uint8_t*)&msg.mvflength) + sizeof(msg.mvflength));    
+    else if (name == "mvflength"){
+     //written += write_bytes(&strct,((uint8_t*)&msg.mvflength),((uint8_t*)&msg.mvflength) + sizeof(msg.mvflength));
+     std::uint16_t t;
+     written += write_uint16(&strct,&t,endianess);
+     msg.mvflength = t;
+    }    
     else if (name == "pev_id") 
      written += write_bytes(&strct,((uint8_t*)&msg.pev_id),((uint8_t*)&msg.pev_id) + sizeof(msg.pev_id));
     else if (name == "pev_mac")
@@ -284,7 +332,7 @@ size_t write(std::vector<ceps::ast::Nodebase_ptr> const & v, cm_slac_match_cnf_t
   return written;
 } 
 
-size_t write(std::vector<ceps::ast::Nodebase_ptr> const & v, cm_set_key_req_t& msg, size_t ){
+size_t write(std::vector<ceps::ast::Nodebase_ptr> const & v, cm_set_key_req_t& msg, size_t, Endianess endianess ){
   size_t written = 0;
   for(auto e : v){
     if (!ceps::ast::is<ceps::ast::Ast_node_kind::structdef>(e)) continue;
@@ -299,9 +347,12 @@ size_t write(std::vector<ceps::ast::Nodebase_ptr> const & v, cm_set_key_req_t& m
      written += write_bytes(&strct,((uint8_t*)&msg.your_nonce),((uint8_t*)&msg.your_nonce) + sizeof(msg.your_nonce));    
     else if (name == "pid") 
      written += write_bytes(&strct,((uint8_t*)&msg.pid),((uint8_t*)&msg.pid) + sizeof(msg.pid));
-    else if (name == "prn")
-     written += write_bytes(&strct,((uint8_t*)&msg.prn),((uint8_t*)&msg.prn) + sizeof(msg.prn));
-    else if (name == "pmn")
+    else if (name == "prn"){
+     //written += write_bytes(&strct,((uint8_t*)&msg.prn),((uint8_t*)&msg.prn) + sizeof(msg.prn));
+     std::uint16_t t;
+     written += write_uint16(&strct,&t,endianess);
+     msg.prn = t;
+    } else if (name == "pmn")
      written += write_bytes(&strct,((uint8_t*)&msg.pmn),((uint8_t*)&msg.pmn) + sizeof(msg.pmn));    
     else if (name == "cco_capability") 
      written += write_bytes(&strct,((uint8_t*)&msg.cco_capability),((uint8_t*)&msg.cco_capability) + sizeof(msg.cco_capability));
@@ -316,7 +367,7 @@ size_t write(std::vector<ceps::ast::Nodebase_ptr> const & v, cm_set_key_req_t& m
 } 
 
 
-size_t write(std::vector<ceps::ast::Nodebase_ptr> const & v, cm_amp_map_req_t& msg, size_t size){
+size_t write(std::vector<ceps::ast::Nodebase_ptr> const & v, cm_amp_map_req_t& msg, size_t size, Endianess endianess){
   size_t written = 0;
   for(auto e : v){
     if (!ceps::ast::is<ceps::ast::Ast_node_kind::structdef>(e)) continue;
@@ -324,7 +375,10 @@ size_t write(std::vector<ceps::ast::Nodebase_ptr> const & v, cm_amp_map_req_t& m
     auto& name = ceps::ast::name(strct);
 
     if (name == "amlen"){ 
-     written += write_bytes(&strct,((uint8_t*)&msg.amlen),((uint8_t*)&msg.amlen) + sizeof(msg.amlen));
+     //written += write_bytes(&strct,((uint8_t*)&msg.amlen),((uint8_t*)&msg.amlen) + sizeof(msg.amlen));
+     std::uint16_t t;
+     written += write_uint16(&strct,&t,endianess);
+     msg.amlen = t;
      break;     
     }
   }
@@ -343,7 +397,7 @@ size_t write(std::vector<ceps::ast::Nodebase_ptr> const & v, cm_amp_map_req_t& m
   return written;
 } 
 
-size_t write(std::vector<ceps::ast::Nodebase_ptr> const & v, cm_amp_map_cnf_t& msg, size_t size){
+size_t write(std::vector<ceps::ast::Nodebase_ptr> const & v, cm_amp_map_cnf_t& msg, size_t size, Endianess endianess){
   size_t written = 0;
   for(auto e : v){
     if (!ceps::ast::is<ceps::ast::Ast_node_kind::structdef>(e)) continue;

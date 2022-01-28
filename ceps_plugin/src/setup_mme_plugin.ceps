@@ -12,8 +12,8 @@ macro mme_header{
     header{
         oda{0;1;2;3;4;5;};
         osa{6;7;8;9;10;11;};
-        vlan_tag{233;};
-        mtype{256;};
+        vlan_tag{0;};
+        mtype{MME_MTYPE;};
         mmv{257;};
         mmtype{hd(arglist);};
         fmi{2;};
