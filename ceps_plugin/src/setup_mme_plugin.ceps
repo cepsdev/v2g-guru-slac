@@ -69,6 +69,9 @@ sm{
                 encode_vlan_tag{
                     homeplug_mme_handler_encode_vlan_tag;
                 };
+                big_endianess{
+                    homeplug_mme_big_endianess;
+                };
                 on_new_client{
                     // In server mode only: fires at the very first message received by a new remote client
                     Event evMMEConnected;

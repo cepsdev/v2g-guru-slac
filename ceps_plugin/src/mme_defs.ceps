@@ -90,4 +90,5 @@ val homeplug_mme_handler_run_tests          = 0;
 val homeplug_mme_handler_sctp_port          = "56800";
 val homeplug_mme_handler_as_server          = 1;
 val homeplug_mme_handler_encode_vlan_tag    = 1;
-val homeplug_mme_print_sent_mme             = 0;
+val homeplug_mme_print_sent_mme             = 1;
+val homeplug_mme_big_endianess              = 1;

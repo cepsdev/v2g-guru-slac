@@ -95,8 +95,8 @@ class mme4ceps_plugin{
     sockaddr_in last_client = {0};
     socklen_t last_client_len = 0;
     std::mutex commfd_mtx;
-
     bool encode_vlan_tag = true;
+    bool encode_big_endianess = false;
 
     bool mme_msg_cm_slac_param_req_setup_symtbl(homeplug_mme_generic*, size_t mme_size);
     bool mme_msg_cm_slac_parm_cnf_setup_symtbl(homeplug_mme_generic*, size_t mme_size);

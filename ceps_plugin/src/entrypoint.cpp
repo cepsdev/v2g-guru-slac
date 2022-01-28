@@ -83,6 +83,14 @@ static ceps::ast::node_t plugin_entrypoint_route_mme(ceps::ast::node_callparamet
       if (r.has_value())
        plugn.encode_vlan_tag = r.value();
     }
+
+    {
+      // homeplug_mme_big_endianess 
+      auto encode_vlan_tag = ceps::ast::Nodeset{ceps_script_clone}["setup"]["big_endianess"];
+      auto r = encode_vlan_tag.as_int_noexcept();
+      if (r.has_value())
+       plugn.encode_big_endianess = r.value() != 0;
+    }    
   
     std::string err_ev;
     if (err_ev_ns.size() == 1 && ceps::ast::is_a_symbol(err_ev_ns[0]))
@@ -192,18 +200,44 @@ static ceps::ast::node_t plugin_entrypoint_route_mme(ceps::ast::node_callparamet
     return nullptr;
 }
 
+static void write_mme_header(ceps::ast::node_t msg, homeplug_mme_generic& mme_msg, bool encode_big_endian){
+  auto ns = ceps::ast::Nodeset{msg}["mme"];
+  auto header = ns["header"];
+  auto mmtype = header["mmtype"];    
+  auto fmi = header["fmi"].as_int_noexcept();
+  auto fmsn = header["fmsn"].as_int_noexcept();
+  auto mmv = header["mmv"].as_int_noexcept();
+  auto mtype = header["mtype"].as_int_noexcept();
+  auto oda = header["oda"];
+  auto osa = header["osa"];
+  auto vlan_tag = header["vlan_tag"].as_int_noexcept();
+  auto payload = ns["payload"];
+  auto mme_type = mmtype.as_int_noexcept();
+
+  //This is not the right way, @TODO Improve readability, conciseness.
+
+  if (encode_big_endian){
+   mme_msg.mmtype = cov_endianess_narrow<Endianess::big,decltype(mme_msg.mmtype),int>(mme_type.value());
+   if(vlan_tag.has_value()) mme_msg.vlan_tag = cov_endianess_narrow<Endianess::big,decltype(mme_msg.vlan_tag),int>(vlan_tag.value());
+   if(mtype.has_value()) mme_msg.mtype = cov_endianess_narrow<Endianess::big,decltype(mme_msg.mtype),int>(mtype.value());
+  } else {
+   mme_msg.mmtype = cov_endianess_narrow<Endianess::machine,decltype(mme_msg.mmtype),int>(mme_type.value());
+   if(vlan_tag.has_value()) mme_msg.vlan_tag = cov_endianess_narrow<Endianess::machine,decltype(mme_msg.vlan_tag),int>(vlan_tag.value());
+   if(mtype.has_value()) mme_msg.mtype = cov_endianess_narrow<Endianess::machine,decltype(mme_msg.mtype),int>(mtype.value());
+  }
+
+  if(fmi.has_value()) mme_msg.fmi = fmi.value();
+  if(fmsn.has_value()) mme_msg.fmsn = fmsn.value();
+  if(mmv.has_value()) mme_msg.mmv = mmv.value();
+  if(!osa.empty()) write_bytes(osa.nodes(), ((uint8_t*) &mme_msg.osa), ((uint8_t*) &mme_msg.osa) + sizeof(mme_msg.osa));
+  if(!oda.empty()) write_bytes(oda.nodes(), ((uint8_t*) &mme_msg.oda), ((uint8_t*) &mme_msg.oda) + sizeof(mme_msg.oda));
+}
+
 static ceps::ast::node_t plugin_send_mme(ceps::ast::node_callparameters_t params){
     auto msg = get_first_child(params);
     auto ns = ceps::ast::Nodeset{msg}["mme"];
     auto header = ns["header"];
     auto mmtype = header["mmtype"];    
-    auto fmi = header["fmi"].as_int_noexcept();
-    auto fmsn = header["fmsn"].as_int_noexcept();
-    auto mmv = header["mmv"].as_int_noexcept();
-    auto mtype = header["mtype"].as_int_noexcept();
-    auto oda = header["oda"];
-    auto osa = header["osa"];
-    auto vlan_tag = header["vlan_tag"].as_int_noexcept();
     auto payload = ns["payload"];
     auto mme_type = mmtype.as_int_noexcept();
     auto print_debug_ns = ns["debug"]; 
@@ -214,18 +248,11 @@ static ceps::ast::node_t plugin_send_mme(ceps::ast::node_callparameters_t params
     if (!mme_type.has_value()) return nullptr;
     char mme_msg_buffer[mme::max_frame_size] = {0};
     homeplug_mme_generic& mme_msg = *((homeplug_mme_generic*)mme_msg_buffer);
+    
+    write_mme_header(msg, mme_msg, plugn.encode_big_endianess);
+
     auto payload_size = sizeof(homeplug_mme_generic) - sizeof(homeplug_mme_generic_header);
     auto payload_bytes_written = 0;
-
-    mme_msg.mmtype = mme_type.value();
-    if(fmi.has_value()) mme_msg.fmi = fmi.value();
-    if(fmsn.has_value()) mme_msg.fmsn = fmsn.value();
-    if(mmv.has_value()) mme_msg.mmv = mmv.value();
-    if(mtype.has_value()) mme_msg.mtype = mtype.value();
-
-    if(!osa.empty()) write_bytes(osa.nodes(), ((uint8_t*) &mme_msg.osa), ((uint8_t*) &mme_msg.osa) + sizeof(mme_msg.osa));
-    if(!oda.empty()) write_bytes(oda.nodes(), ((uint8_t*) &mme_msg.oda), ((uint8_t*) &mme_msg.oda) + sizeof(mme_msg.oda));
-    if(vlan_tag.has_value()) mme_msg.vlan_tag = vlan_tag.value();
 
     if (mme_msg.mmtype == mme::CM_SLAC_PARM_REQ)
      payload_bytes_written = write(payload.nodes(), mme_msg.mmdata.cm_slac_parm_req, payload_size);

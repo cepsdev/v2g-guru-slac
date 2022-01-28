@@ -243,3 +243,21 @@ struct __attribute__((__packed__))  homeplug_mme_generic{
 
 std::ostream& operator << (std::ostream & , homeplug_mme_generic const & );
 
+enum class Endianess {machine,big};
+
+template <Endianess endianess, typename T1, typename T2>
+ inline T1 cov_endianess_narrow(T2 v) {
+        return v;
+  }
+
+template <>
+  std::uint16_t cov_endianess_narrow<Endianess::big,std::uint16_t,int>(int v);
+template <>
+  std::int16_t cov_endianess_narrow<Endianess::big,std::int16_t,int>(int v);
+template <>
+  std::uint32_t cov_endianess_narrow<Endianess::big,std::uint32_t,int>(int v);
+template <>
+  std::int32_t cov_endianess_narrow<Endianess::big,std::int32_t,int>(int v);
+
+
+

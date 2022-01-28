@@ -1,7 +1,7 @@
 /*
 MIT License
 
-Copyright (c) 2021 Tomas Prerovsky
+Copyright (c) 2021-22 Tomas Prerovsky
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -24,7 +24,28 @@ SOFTWARE.
 
 #include "mme.hpp"
 
+template <>
+  std::uint16_t cov_endianess_narrow<Endianess::big,std::uint16_t,int>(int v){
+    return htobe16(v);
+  }
+template <>
+  std::int16_t cov_endianess_narrow<Endianess::big,std::int16_t,int>(int v){
+    return htobe16(v);
+  }
+template <>
+  std::uint32_t cov_endianess_narrow<Endianess::big,std::uint32_t,int>(int v){
+    return htobe32(v);
+  }
+template <>
+  std::int32_t cov_endianess_narrow<Endianess::big,std::int32_t,int>(int v){
+    return htobe16(v);
+  }
+
+
 std::ostream& operator << (std::ostream & os, homeplug_mme_generic const & mme_msg){
+  
+  //What follows is a long bloody mess.
+
   os << "mme header:\n";
 
   os << "\t";
