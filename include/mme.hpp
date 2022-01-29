@@ -242,22 +242,23 @@ struct __attribute__((__packed__))  homeplug_mme_generic{
 };
 
 std::ostream& operator << (std::ostream & , homeplug_mme_generic const & );
+enum class Endianness {machine,big};
 
-enum class Endianess {machine,big};
+void cov_to_machine_endianness(homeplug_mme_generic&, Endianness endianness /*endianness of the input*/); 
+void cov_to_big_endianness(homeplug_mme_generic& mme_msg, Endianness endianness /*endianness of the input*/);
 
-template <Endianess endianess, typename T1, typename T2>
- inline T1 cov_endianess_narrow(T2 v) {
+
+template <Endianness endianness, typename T1, typename T2>
+ inline T1 cov_endianness_narrow(T2 v) {
         return v;
   }
 
 template <>
-  std::uint16_t cov_endianess_narrow<Endianess::big,std::uint16_t,int>(int v);
+  std::uint16_t cov_endianness_narrow<Endianness::big,std::uint16_t,int>(int v);
 template <>
-  std::int16_t cov_endianess_narrow<Endianess::big,std::int16_t,int>(int v);
+  std::int16_t cov_endianness_narrow<Endianness::big,std::int16_t,int>(int v);
 template <>
-  std::uint32_t cov_endianess_narrow<Endianess::big,std::uint32_t,int>(int v);
+  std::uint32_t cov_endianness_narrow<Endianness::big,std::uint32_t,int>(int v);
 template <>
-  std::int32_t cov_endianess_narrow<Endianess::big,std::int32_t,int>(int v);
-
-
+  std::int32_t cov_endianness_narrow<Endianness::big,std::int32_t,int>(int v);
 

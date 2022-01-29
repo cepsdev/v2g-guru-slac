@@ -19,7 +19,7 @@ macro mme_header{
         fmi{2;};
         fmsn{3;};
     };
-    debug{homeplug_mme_print_sent_mme;};
+    //debug{homeplug_mme_print_sent_mme;};
 };
 
 macro include_homeplug_mme_handler{
@@ -69,8 +69,8 @@ sm{
                 encode_vlan_tag{
                     homeplug_mme_handler_encode_vlan_tag;
                 };
-                big_endianess{
-                    homeplug_mme_big_endianess;
+                big_endianness{
+                    homeplug_mme_big_endianness;
                 };
                 on_new_client{
                     // In server mode only: fires at the very first message received by a new remote client

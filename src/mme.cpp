@@ -25,19 +25,19 @@ SOFTWARE.
 #include "mme.hpp"
 
 template <>
-  std::uint16_t cov_endianess_narrow<Endianess::big,std::uint16_t,int>(int v){
+  std::uint16_t cov_endianness_narrow<Endianness::big,std::uint16_t,int>(int v){
     return htobe16(v);
   }
 template <>
-  std::int16_t cov_endianess_narrow<Endianess::big,std::int16_t,int>(int v){
+  std::int16_t cov_endianness_narrow<Endianness::big,std::int16_t,int>(int v){
     return htobe16(v);
   }
 template <>
-  std::uint32_t cov_endianess_narrow<Endianess::big,std::uint32_t,int>(int v){
+  std::uint32_t cov_endianness_narrow<Endianness::big,std::uint32_t,int>(int v){
     return htobe32(v);
   }
 template <>
-  std::int32_t cov_endianess_narrow<Endianess::big,std::int32_t,int>(int v){
+  std::int32_t cov_endianness_narrow<Endianness::big,std::int32_t,int>(int v){
     return htobe16(v);
   }
 
@@ -46,61 +46,59 @@ std::ostream& operator << (std::ostream & os, homeplug_mme_generic const & mme_m
   
   //What follows is a long bloody mess.
 
-  os << "mme header:\n";
+  Endianness endianness    = mme_msg.mtype == 35041 ? Endianness::machine : Endianness::big;
 
-  os << "\t";
-  os << "oda :";
+  std::uint16_t mtype     = (endianness == Endianness::big) ? be16toh(mme_msg.mtype) : mme_msg.mtype; 
+  std::uint16_t mmtype    = (endianness == Endianness::big) ? be16toh(mme_msg.mmtype) : mme_msg.mmtype;
+  std::uint32_t vlan_tag  = (endianness == Endianness::big) ? be32toh(mme_msg.vlan_tag) : mme_msg.vlan_tag;
+
+  os << "mme header:\n\toda :";
   for(size_t i = 0; i < sizeof(mme_msg.oda);++i){
     os << " " << (int)mme_msg.oda[i];
   }
-  os << "\n";
-  
-  os << "\t";
-  os << "osa :";
+  os << "\n\tosa:";
   for(size_t i = 0; i < sizeof(mme_msg.osa);++i){
     os << " " << (int)mme_msg.osa[i];
   }
-  os << "\n";
-
-  os << "\t";os << "mmtype: " <<(int) mme_msg.mmtype;
-  if (mme_msg.mmtype == mme::CM_SLAC_PARM_REQ)
+  os << "\n\tmmtype: " << mmtype;
+  if (mmtype == mme::CM_SLAC_PARM_REQ)
    os << " (CM_SLAC_PARM_REQ)\n"; 
-  else if (mme_msg.mmtype == mme::CM_SLAC_PARM_CNF)
+  else if (mmtype == mme::CM_SLAC_PARM_CNF)
    os << " (CM_SLAC_PARM_CNF)\n";
-  else if (mme_msg.mmtype == mme::CM_START_ATTEN_CHAR_IND)
+  else if (mmtype == mme::CM_START_ATTEN_CHAR_IND)
    os << " (CM_START_ATTEN_CHAR_IND)\n";
-  else if (mme_msg.mmtype == mme::CM_MNBC_SOUND_IND)
+  else if (mmtype == mme::CM_MNBC_SOUND_IND)
    os << " (CM_MNBC_SOUND_IND)\n";
-  else if (mme_msg.mmtype == mme::CM_ATTEN_CHAR_IND)
+  else if (mmtype == mme::CM_ATTEN_CHAR_IND)
    os << " (CM_ATTEN_CHAR_IND)\n";
-  else if (mme_msg.mmtype == mme::CM_ATTEN_CHAR_RSP)
+  else if (mmtype == mme::CM_ATTEN_CHAR_RSP)
    os << " (CM_ATTEN_CHAR_RSP)\n";
-  else if (mme_msg.mmtype == mme::CM_ATTEN_PROFILE_IND)
+  else if (mmtype == mme::CM_ATTEN_PROFILE_IND)
    os << " (CM_ATTEN_PROFILE_IND)\n";
-  else if (mme_msg.mmtype == mme::CM_VALIDATE_REQ)
+  else if (mmtype == mme::CM_VALIDATE_REQ)
    os << " (CM_VALIDATE_REQ)\n";
-  else if (mme_msg.mmtype == mme::CM_VALIDATE_CNF)
+  else if (mmtype == mme::CM_VALIDATE_CNF)
    os << " (CM_VALIDATE_CNF)\n";
-  else if (mme_msg.mmtype == mme::CM_SLAC_MATCH_REQ)
+  else if (mmtype == mme::CM_SLAC_MATCH_REQ)
    os << " (CM_SLAC_MATCH_REQ)\n";
-  else if (mme_msg.mmtype == mme::CM_SLAC_MATCH_CNF)
+  else if (mmtype == mme::CM_SLAC_MATCH_CNF)
    os << " (CM_SLAC_MATCH_CNF)\n";
-  else if (mme_msg.mmtype == mme::CM_SET_KEY_REQ)
+  else if (mmtype == mme::CM_SET_KEY_REQ)
    os << " (CM_SET_KEY_REQ)\n";
-  else if (mme_msg.mmtype == mme::CM_AMP_MAP_REQ)
+  else if (mmtype == mme::CM_AMP_MAP_REQ)
    os << " (CM_AMP_MAP_REQ)\n";
-  else if (mme_msg.mmtype == mme::CM_AMP_MAP_CNF)
+  else if (mmtype == mme::CM_AMP_MAP_CNF)
    os << " (CM_AMP_MAP_CNF)\n";
   else
    os << " (?)\n"; 
  
-  os << "\t";os << "mtype: " << (int) mme_msg.mtype << "\n";
+  os << "\t";os << "mtype: " << (int) mtype << "\n";
   os << "\t";os << "mmv: " << (int) mme_msg.mmv << "\n";
-  os << "\t";os << "vlan_tag: " << (int) mme_msg.vlan_tag << "\n";
+  os << "\t";os << "vlan_tag: " << vlan_tag << "\n";
   os << "\t";os << "fmi: " << (int) mme_msg.fmi << "\n";
   os << "\t";os << "fmsn: " << (int) mme_msg.fmsn << "\n";
   os << "mme data:\n";
-  if (mme_msg.mmtype == mme::CM_SLAC_PARM_REQ){
+  if (mmtype == mme::CM_SLAC_PARM_REQ){
     os << "\t";os << "application_type: " <<(int) mme_msg.mmdata.cm_slac_parm_req.application_type << "\n";
     os << "\t";os << "security_type: " <<(int) mme_msg.mmdata.cm_slac_parm_req.security_type << "\n";
     os << "\t";os << "run_id: " ;
@@ -108,7 +106,7 @@ std::ostream& operator << (std::ostream & os, homeplug_mme_generic const & mme_m
       os << " " << (int)mme_msg.mmdata.cm_slac_parm_req.run_id[i];
     }
     os << "\n";
-  } else if (mme_msg.mmtype == mme::CM_SLAC_PARM_CNF){
+  } else if (mmtype == mme::CM_SLAC_PARM_CNF){
     os << "\t";os << "m_sound_target: " ;
     for(size_t i = 0; i < sizeof(mme_msg.mmdata.cm_slac_parm_cnf.m_sound_target);++i){
       os << " " << (int)mme_msg.mmdata.cm_slac_parm_cnf.m_sound_target[i];
@@ -129,7 +127,7 @@ std::ostream& operator << (std::ostream & os, homeplug_mme_generic const & mme_m
       os << " " << (int)mme_msg.mmdata.cm_slac_parm_cnf.run_id[i];
     }
     os << "\n";
-  } else if (mme_msg.mmtype == mme::CM_START_ATTEN_CHAR_IND) {
+  } else if (mmtype == mme::CM_START_ATTEN_CHAR_IND) {
     os << "\t";os << "application_type: " <<(int) mme_msg.mmdata.cm_start_atten_char_ind.application_type << "\n";
     os << "\t";os << "security_type: " <<(int) mme_msg.mmdata.cm_start_atten_char_ind.security_type << "\n";
     os << "\t";os << "num_sounds: " <<(int) mme_msg.mmdata.cm_start_atten_char_ind.num_sounds << "\n";
@@ -145,7 +143,7 @@ std::ostream& operator << (std::ostream & os, homeplug_mme_generic const & mme_m
       os << " " << (int)mme_msg.mmdata.cm_start_atten_char_ind.run_id[i];
     }
     os << "\n";
-  } else if (mme_msg.mmtype == mme::CM_MNBC_SOUND_IND) {
+  } else if (mmtype == mme::CM_MNBC_SOUND_IND) {
     os << "\t";os << "application_type: " <<(int) mme_msg.mmdata.cm_mnbc_sound_ind.application_type << "\n";
     os << "\t";os << "security_type: " <<(int) mme_msg.mmdata.cm_mnbc_sound_ind.security_type << "\n";
     os << "\t";os << "sender_id: " ;
@@ -165,7 +163,7 @@ std::ostream& operator << (std::ostream & os, homeplug_mme_generic const & mme_m
       os << " " << (int)mme_msg.mmdata.cm_mnbc_sound_ind.rnd[i];
     }
     os << "\n";
-  } else if (mme_msg.mmtype == mme::CM_ATTEN_CHAR_IND) { 
+  } else if (mmtype == mme::CM_ATTEN_CHAR_IND) { 
     os << "\t";os << "application_type: " <<(int) mme_msg.mmdata.cm_atten_char_ind.application_type << "\n";
     os << "\t";os << "security_type: " <<(int) mme_msg.mmdata.cm_atten_char_ind.security_type << "\n";
     os << "\t";os << "source_address: " ;
@@ -194,7 +192,7 @@ std::ostream& operator << (std::ostream & os, homeplug_mme_generic const & mme_m
       os << " " << (int)mme_msg.mmdata.cm_atten_char_ind.atten_profile[i];
     }
     os << "\n";
-  } else if (mme_msg.mmtype == mme::CM_ATTEN_CHAR_RSP) { 
+  } else if (mmtype == mme::CM_ATTEN_CHAR_RSP) { 
     os << "\t";os << "application_type: " <<(int) mme_msg.mmdata.cm_atten_char_rsp.application_type << "\n";
     os << "\t";os << "security_type: " <<(int) mme_msg.mmdata.cm_atten_char_rsp.security_type << "\n";
     os << "\t";os << "source_address: " ;
@@ -218,7 +216,7 @@ std::ostream& operator << (std::ostream & os, homeplug_mme_generic const & mme_m
     }
     os << "\n";
     os << "\t";os << "result: " <<(int) mme_msg.mmdata.cm_atten_char_rsp.result << "\n";
-  } else if (mme_msg.mmtype == mme::CM_ATTEN_PROFILE_IND)  { 
+  } else if (mmtype == mme::CM_ATTEN_PROFILE_IND)  { 
     os << "\t";os << "pev_mac: " ;
     for(size_t i = 0; i < sizeof(mme_msg.mmdata.cm_atten_profile_ind.pev_mac);++i){
       os << " " << (int)mme_msg.mmdata.cm_atten_profile_ind.pev_mac[i];
@@ -230,16 +228,16 @@ std::ostream& operator << (std::ostream & os, homeplug_mme_generic const & mme_m
       os << " " << (int)mme_msg.mmdata.cm_atten_profile_ind.aag[i];
     }
     os << "\n";
-  } else if (mme_msg.mmtype == mme::CM_VALIDATE_REQ)  { 
+  } else if (mmtype == mme::CM_VALIDATE_REQ)  { 
     os << "\t";os << "signal_type: " <<(int) mme_msg.mmdata.cm_validate_req.signal_type << "\n";
     os << "\t";os << "timer: " <<(int) mme_msg.mmdata.cm_validate_req.timer << "\n";
     os << "\t";os << "result: " <<(int) mme_msg.mmdata.cm_validate_req.result << "\n";
 
-  } else if (mme_msg.mmtype == mme::CM_VALIDATE_CNF)  { 
+  } else if (mmtype == mme::CM_VALIDATE_CNF)  { 
     os << "\t";os << "signal_type: " <<(int) mme_msg.mmdata.cm_validate_cnf.signal_type << "\n";
     os << "\t";os << "toggle_num: " <<(int) mme_msg.mmdata.cm_validate_cnf.toggle_num << "\n";
     os << "\t";os << "result: " <<(int) mme_msg.mmdata.cm_validate_cnf.result << "\n";
-  } else if (mme_msg.mmtype == mme::CM_SLAC_MATCH_REQ) { 
+  } else if (mmtype == mme::CM_SLAC_MATCH_REQ) { 
     os << "\t";os << "application_type: " <<(int) mme_msg.mmdata.cm_slac_match_req.application_type << "\n";
     os << "\t";os << "security_type: " <<(int) mme_msg.mmdata.cm_slac_match_req.security_type << "\n";
     os << "\t";os << "mvflength: " <<(int) mme_msg.mmdata.cm_slac_match_req.mvflength << "\n";
@@ -269,7 +267,7 @@ std::ostream& operator << (std::ostream & os, homeplug_mme_generic const & mme_m
       os << " " << (int)mme_msg.mmdata.cm_slac_match_req.run_id[i];
     }
     os << "\n";
-  } else if (mme_msg.mmtype == mme::CM_SLAC_MATCH_CNF) { 
+  } else if (mmtype == mme::CM_SLAC_MATCH_CNF) { 
     os << "\t";os << "application_type: " <<(int) mme_msg.mmdata.cm_slac_match_cnf.application_type << "\n";
     os << "\t";os << "security_type: " <<(int) mme_msg.mmdata.cm_slac_match_cnf.security_type << "\n";
     os << "\t";os << "mvflength: " <<(int) mme_msg.mmdata.cm_slac_match_cnf.mvflength << "\n";
@@ -309,7 +307,7 @@ std::ostream& operator << (std::ostream & os, homeplug_mme_generic const & mme_m
       os << " " << (int)mme_msg.mmdata.cm_slac_match_cnf.nmk[i];
     }
     os << "\n";
-  } else if (mme_msg.mmtype == mme::CM_SET_KEY_REQ) { 
+  } else if (mmtype == mme::CM_SET_KEY_REQ) { 
     os << "\t";os << "key_type: " <<(int) mme_msg.mmdata.cm_set_key_req.key_type << "\n";
     os << "\t";os << "my_nonce: " ;
     for(size_t i = 0; i < sizeof(mme_msg.mmdata.cm_set_key_req.my_nonce);++i){
@@ -336,7 +334,7 @@ std::ostream& operator << (std::ostream & os, homeplug_mme_generic const & mme_m
       os << " " << (int)mme_msg.mmdata.cm_set_key_req.new_key[i];
     }
     os << "\n";
-  } else if (mme_msg.mmtype == mme::CM_AMP_MAP_REQ) {
+  } else if (mmtype == mme::CM_AMP_MAP_REQ) {
     os << "\t";os << "amlen: " <<(int) mme_msg.mmdata.cm_amp_map_req.amlen << "\n";
     auto bytes = (size_t) (mme_msg.mmdata.cm_amp_map_req.amlen / 2);
     bool hnibble = false;
@@ -350,7 +348,7 @@ std::ostream& operator << (std::ostream & os, homeplug_mme_generic const & mme_m
     if (mme_msg.mmdata.cm_amp_map_req.amlen % 2)
       os << (int)   (mme_msg.mmdata.cm_amp_map_req.amdata[bytes] & 0xF);
     os << "\n";
-  } else if (mme_msg.mmtype == mme::CM_AMP_MAP_CNF) { 
+  } else if (mmtype == mme::CM_AMP_MAP_CNF) { 
     os << "\t";os << "res_type: " <<(int) mme_msg.mmdata.cm_amp_map_cnf.restype << "\n";
   } else {
     auto p_end = (uint8_t*)&mme_msg.mmdata + sizeof(mme_msg.mmdata);
@@ -363,7 +361,37 @@ std::ostream& operator << (std::ostream & os, homeplug_mme_generic const & mme_m
     }
     os << "\n";
   }
-
-
   return os;
+}
+
+void cov_to_machine_endianness(homeplug_mme_generic& mme_msg, Endianness endianness){
+  if (endianness != Endianness::big) return;
+  mme_msg.mtype     = be16toh(mme_msg.mtype); 
+  mme_msg.mmtype    = be16toh(mme_msg.mmtype);
+  mme_msg.vlan_tag  = be32toh(mme_msg.vlan_tag);
+  if (mme_msg.mmtype == mme::CM_SLAC_MATCH_REQ){
+    mme_msg.mmdata.cm_slac_match_req.mvflength = be16toh(mme_msg.mmdata.cm_slac_match_req.mvflength);
+  } else if (mme_msg.mmtype == mme::CM_SLAC_MATCH_CNF){
+    mme_msg.mmdata.cm_slac_match_cnf.mvflength = be16toh(mme_msg.mmdata.cm_slac_match_cnf.mvflength);
+  } else if (mme_msg.mmtype == mme::CM_SET_KEY_REQ){
+    mme_msg.mmdata.cm_set_key_req.prn = be16toh(mme_msg.mmdata.cm_set_key_req.prn); 
+  } else if (mme_msg.mmtype == mme::CM_AMP_MAP_REQ){
+    mme_msg.mmdata.cm_amp_map_req.amlen = be16toh(mme_msg.mmdata.cm_amp_map_req.amlen); 
+  }
+} 
+
+void cov_to_big_endianness(homeplug_mme_generic& mme_msg, Endianness endianness /*endianness of the input*/){
+  if (endianness == Endianness::big) return;
+  mme_msg.mtype     = htobe16(mme_msg.mtype); 
+  mme_msg.mmtype    = htobe16(mme_msg.mmtype);
+  mme_msg.vlan_tag  = htobe32(mme_msg.vlan_tag);
+  if (mme_msg.mmtype == mme::CM_SLAC_MATCH_REQ){
+    mme_msg.mmdata.cm_slac_match_req.mvflength = htobe16(mme_msg.mmdata.cm_slac_match_req.mvflength);
+  } else if (mme_msg.mmtype == mme::CM_SLAC_MATCH_CNF){
+    mme_msg.mmdata.cm_slac_match_cnf.mvflength = htobe16(mme_msg.mmdata.cm_slac_match_cnf.mvflength);
+  } else if (mme_msg.mmtype == mme::CM_SET_KEY_REQ){
+    mme_msg.mmdata.cm_set_key_req.prn = htobe16(mme_msg.mmdata.cm_set_key_req.prn); 
+  } else if (mme_msg.mmtype == mme::CM_AMP_MAP_REQ){
+    mme_msg.mmdata.cm_amp_map_req.amlen = htobe16(mme_msg.mmdata.cm_amp_map_req.amlen); 
+  }
 }

@@ -157,7 +157,7 @@ mme4ceps_plugin::result_t mme4ceps_plugin::start_sctp_server(std::string port){
                 if (rd_sz > 0 && sndrcvinfo.sinfo_stream != 0){
                     std::cerr << " read " << rd_sz <<" bytes sndrcvinfo.sinfo_stream =" << sndrcvinfo.sinfo_stream << std::endl;
                     int handshake_cmd = 0;
-                    sctp_sendmsg(listenfd, &handshake_cmd,sizeof(handshake_cmd),(sockaddr*) &client,len,0,0,sndrcvinfo.sinfo_stream,0,0 ) ;
+                    sctp_sendmsg(listenfd, &handshake_cmd,sizeof(handshake_cmd),(sockaddr*) &client,len,0,0,sndrcvinfo.sinfo_stream,0,0);
                 } else if(rd_sz > 0) {
                     bool new_client = false;
                     {
@@ -169,6 +169,9 @@ mme4ceps_plugin::result_t mme4ceps_plugin::start_sctp_server(std::string port){
                     if (new_client && !on_client_connect.empty())
                       execute_ceps(on_client_connect);
 
+                    if (encode_big_endianness) {
+                        cov_to_machine_endianness( *((homeplug_mme_generic*) readbuf) , Endianness::big);
+                    }
                     this->handle_homeplug_mme( (homeplug_mme_generic*) readbuf,rd_sz);
                 }
             }

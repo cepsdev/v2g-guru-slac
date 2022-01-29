@@ -29,10 +29,10 @@ SOFTWARE.
 #include "mme.hpp"
 #include "ceps_ast.hh"
 
-size_t write_uint16(ceps::ast::Struct_ptr strct,std::uint16_t*, Endianess); 
-size_t write_int16(ceps::ast::Struct_ptr strct,std::uint16_t* pv, Endianess endianess);
-size_t write_uint32(ceps::ast::Struct_ptr strct,std::uint16_t*, Endianess); 
-size_t write_int32(ceps::ast::Struct_ptr strct,std::uint16_t* pv, Endianess endianess);
+size_t write_uint16(ceps::ast::Struct_ptr strct,std::uint16_t*, Endianness); 
+size_t write_int16(ceps::ast::Struct_ptr strct,std::uint16_t* pv, Endianness endianness);
+size_t write_uint32(ceps::ast::Struct_ptr strct,std::uint16_t*, Endianness); 
+size_t write_int32(ceps::ast::Struct_ptr strct,std::uint16_t* pv, Endianness endianness);
 
 
 template<typename Iter>
@@ -125,17 +125,17 @@ size_t write_nibbles(ceps::ast::Struct_ptr strct, Iter beg, Iter end){
   return written;
 }
 
-size_t write(std::vector<ceps::ast::Nodebase_ptr> const & v, cm_slac_parm_req_t& msg, size_t size, Endianess);
-size_t write(std::vector<ceps::ast::Nodebase_ptr> const & v, cm_slac_parm_cnf_t& msg, size_t size, Endianess);
-size_t write(std::vector<ceps::ast::Nodebase_ptr> const & v, cm_start_atten_char_ind_t& msg, size_t size, Endianess);
-size_t write(std::vector<ceps::ast::Nodebase_ptr> const & v, cm_atten_char_ind_t& msg, size_t size, Endianess);
-size_t write(std::vector<ceps::ast::Nodebase_ptr> const & v, cm_mnbc_sound_ind_t& msg, size_t size, Endianess);
-size_t write(std::vector<ceps::ast::Nodebase_ptr> const & v, cm_atten_char_rsp_t& msg, size_t size, Endianess);
-size_t write(std::vector<ceps::ast::Nodebase_ptr> const & v, cm_atten_profile_ind_t& msg, size_t size, Endianess);
-size_t write(std::vector<ceps::ast::Nodebase_ptr> const & v, cm_validate_req_t& msg, size_t size, Endianess);
-size_t write(std::vector<ceps::ast::Nodebase_ptr> const & v, cm_validate_cnf_t& msg, size_t size, Endianess);
-size_t write(std::vector<ceps::ast::Nodebase_ptr> const & v, cm_slac_match_req_t& msg, size_t size, Endianess);
-size_t write(std::vector<ceps::ast::Nodebase_ptr> const & v, cm_slac_match_cnf_t& msg, size_t size, Endianess);
-size_t write(std::vector<ceps::ast::Nodebase_ptr> const & v, cm_set_key_req_t& msg, size_t, Endianess);
-size_t write(std::vector<ceps::ast::Nodebase_ptr> const & v, cm_amp_map_req_t& msg, size_t size, Endianess);
-size_t write(std::vector<ceps::ast::Nodebase_ptr> const & v, cm_amp_map_cnf_t& msg, size_t size, Endianess);
+size_t write(std::vector<ceps::ast::Nodebase_ptr> const & v, cm_slac_parm_req_t& msg, size_t size, Endianness);
+size_t write(std::vector<ceps::ast::Nodebase_ptr> const & v, cm_slac_parm_cnf_t& msg, size_t size, Endianness);
+size_t write(std::vector<ceps::ast::Nodebase_ptr> const & v, cm_start_atten_char_ind_t& msg, size_t size, Endianness);
+size_t write(std::vector<ceps::ast::Nodebase_ptr> const & v, cm_atten_char_ind_t& msg, size_t size, Endianness);
+size_t write(std::vector<ceps::ast::Nodebase_ptr> const & v, cm_mnbc_sound_ind_t& msg, size_t size, Endianness);
+size_t write(std::vector<ceps::ast::Nodebase_ptr> const & v, cm_atten_char_rsp_t& msg, size_t size, Endianness);
+size_t write(std::vector<ceps::ast::Nodebase_ptr> const & v, cm_atten_profile_ind_t& msg, size_t size, Endianness);
+size_t write(std::vector<ceps::ast::Nodebase_ptr> const & v, cm_validate_req_t& msg, size_t size, Endianness);
+size_t write(std::vector<ceps::ast::Nodebase_ptr> const & v, cm_validate_cnf_t& msg, size_t size, Endianness);
+size_t write(std::vector<ceps::ast::Nodebase_ptr> const & v, cm_slac_match_req_t& msg, size_t size, Endianness);
+size_t write(std::vector<ceps::ast::Nodebase_ptr> const & v, cm_slac_match_cnf_t& msg, size_t size, Endianness);
+size_t write(std::vector<ceps::ast::Nodebase_ptr> const & v, cm_set_key_req_t& msg, size_t, Endianness);
+size_t write(std::vector<ceps::ast::Nodebase_ptr> const & v, cm_amp_map_req_t& msg, size_t size, Endianness);
+size_t write(std::vector<ceps::ast::Nodebase_ptr> const & v, cm_amp_map_cnf_t& msg, size_t size, Endianness);

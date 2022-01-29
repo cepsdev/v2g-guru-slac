@@ -67,7 +67,9 @@ void mme4ceps_plugin::handle_homeplug_mme(homeplug_mme_generic* msg, size_t mme_
   //std::cerr << *msg << std::endl;
 
   auto it = mme_msg_to_symbol_table_setup_routines.find(msg->mmtype);
-  if (it == mme_msg_to_symbol_table_setup_routines.end()) return;
+  if (it == mme_msg_to_symbol_table_setup_routines.end()){ 
+    std::cerr << "OH\n" << "OH\n"<< "OH\n"<< "OH\n"<< "OH\n"<< "OH\n" <<std::endl;
+    return;}
   if (associated_ceps_block == nullptr) return;
   if (!(this->*(it->second))(msg, mme_size)) return;
   auto ceps_fragment = static_cast<ceps::ast::Nodebase_ptr>(plugin_master->evaluate_fragment_in_global_context_no_symbol_expansion(associated_ceps_block,&scope));

@@ -177,8 +177,9 @@ void comm_handler(std::pair<int,addrinfo*> sckt_addr, Controlpilot & ctlplt){
             char out_buf[mme::max_frame_size+2*padding] = {0};
             homeplug_mme_generic& out_mme = *((homeplug_mme_generic*)(out_buf + padding));
 
+            if (global_settings::big_endian) cov_to_machine_endianness(*mme_msg, Endianness::big);
             size_t payload_size {}; 
-
+            bool do_send_msg{};
             if (mme_msg->mmtype == mme::CM_SLAC_PARM_REQ){
                  auto const& cm_slac_parm_req = mme_msg->mmdata.cm_slac_parm_req;
                  out_mme.mmtype = mme::CM_SLAC_PARM_CNF;
@@ -194,6 +195,7 @@ void comm_handler(std::pair<int,addrinfo*> sckt_addr, Controlpilot & ctlplt){
                  cm_slac_parm_cnf.run_id[5] = cm_slac_parm_req.run_id[5];
                  cm_slac_parm_cnf.run_id[6] = cm_slac_parm_req.run_id[6];
                  cm_slac_parm_cnf.run_id[7] = cm_slac_parm_req.run_id[7];
+                 do_send_msg = true;
 
                     /*uint8_t m_sound_target[6];
                     uint8_t num_sounds;
@@ -205,7 +207,11 @@ void comm_handler(std::pair<int,addrinfo*> sckt_addr, Controlpilot & ctlplt){
                     uint8_t run_id [8];
                     */
             }
-            sctp_sendmsg(sckt, out_buf+padding,payload_size + sizeof(homeplug_mme_generic_header),(sockaddr*) &peeraddr,len,0,0,sri.sinfo_stream,0,0 );
+            if (do_send_msg){
+                if (global_settings::big_endian) 
+                 cov_to_big_endianness(out_mme, Endianness::machine);
+                sctp_sendmsg(sckt, out_buf+padding,payload_size + sizeof(homeplug_mme_generic_header),(sockaddr*) &peeraddr,len,0,0,sri.sinfo_stream,0,0 );
+            }
         }
 
         struct sockaddr_in peeraddr;

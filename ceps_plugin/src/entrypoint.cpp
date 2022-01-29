@@ -85,11 +85,11 @@ static ceps::ast::node_t plugin_entrypoint_route_mme(ceps::ast::node_callparamet
     }
 
     {
-      // homeplug_mme_big_endianess 
-      auto encode_vlan_tag = ceps::ast::Nodeset{ceps_script_clone}["setup"]["big_endianess"];
+      // homeplug_mme_big_endianness 
+      auto encode_vlan_tag = ceps::ast::Nodeset{ceps_script_clone}["setup"]["big_endianness"];
       auto r = encode_vlan_tag.as_int_noexcept();
       if (r.has_value())
-       plugn.encode_big_endianess = r.value() != 0;
+       plugn.encode_big_endianness = r.value() != 0;
     }    
   
     std::string err_ev;
@@ -217,13 +217,13 @@ static void write_mme_header(ceps::ast::node_t msg, homeplug_mme_generic& mme_ms
   //This is not the right way, @TODO Improve readability, conciseness.
 
   if (encode_big_endian){
-   mme_msg.mmtype = cov_endianess_narrow<Endianess::big,decltype(mme_msg.mmtype),int>(mme_type.value());
-   if(vlan_tag.has_value()) mme_msg.vlan_tag = cov_endianess_narrow<Endianess::big,decltype(mme_msg.vlan_tag),int>(vlan_tag.value());
-   if(mtype.has_value()) mme_msg.mtype = cov_endianess_narrow<Endianess::big,decltype(mme_msg.mtype),int>(mtype.value());
+   mme_msg.mmtype = cov_endianness_narrow<Endianness::big,decltype(mme_msg.mmtype),int>(mme_type.value());
+   if(vlan_tag.has_value()) mme_msg.vlan_tag = cov_endianness_narrow<Endianness::big,decltype(mme_msg.vlan_tag),int>(vlan_tag.value());
+   if(mtype.has_value()) mme_msg.mtype = cov_endianness_narrow<Endianness::big,decltype(mme_msg.mtype),int>(mtype.value());
   } else {
-   mme_msg.mmtype = cov_endianess_narrow<Endianess::machine,decltype(mme_msg.mmtype),int>(mme_type.value());
-   if(vlan_tag.has_value()) mme_msg.vlan_tag = cov_endianess_narrow<Endianess::machine,decltype(mme_msg.vlan_tag),int>(vlan_tag.value());
-   if(mtype.has_value()) mme_msg.mtype = cov_endianess_narrow<Endianess::machine,decltype(mme_msg.mtype),int>(mtype.value());
+   mme_msg.mmtype = cov_endianness_narrow<Endianness::machine,decltype(mme_msg.mmtype),int>(mme_type.value());
+   if(vlan_tag.has_value()) mme_msg.vlan_tag = cov_endianness_narrow<Endianness::machine,decltype(mme_msg.vlan_tag),int>(vlan_tag.value());
+   if(mtype.has_value()) mme_msg.mtype = cov_endianness_narrow<Endianness::machine,decltype(mme_msg.mtype),int>(mtype.value());
   }
 
   
@@ -238,51 +238,53 @@ static ceps::ast::node_t plugin_send_mme(ceps::ast::node_callparameters_t params
     auto msg = get_first_child(params);
     auto ns = ceps::ast::Nodeset{msg}["mme"];
     auto header = ns["header"];
-    auto mmtype = header["mmtype"];    
+    auto mmtype_ns = header["mmtype"];    
     auto payload = ns["payload"];
-    auto mme_type = mmtype.as_int_noexcept();
+    auto mmtype = mmtype_ns.as_int_noexcept();
     auto print_debug_ns = ns["debug"]; 
     auto print_debug = print_debug_ns.size() > 0 && 
                        ceps::ast::is<ceps::ast::Ast_node_kind::int_literal>(print_debug_ns.nodes()[0]) && 
                        0 != ceps::ast::value(ceps::ast::as_int_ref(print_debug_ns.nodes()[0]));
         
-    if (!mme_type.has_value()) return nullptr;
+    if (!mmtype.has_value()) return nullptr;
     char mme_msg_buffer[mme::max_frame_size] = {0};
     homeplug_mme_generic& mme_msg = *((homeplug_mme_generic*)mme_msg_buffer);
     
-    write_mme_header(msg, mme_msg, plugn.encode_big_endianess);
+  
+    
+    write_mme_header(msg, mme_msg, plugn.encode_big_endianness);
 
     auto payload_size = sizeof(homeplug_mme_generic) - sizeof(homeplug_mme_generic_header);
     auto payload_bytes_written = 0;
 
-    if (mme_msg.mmtype == mme::CM_SLAC_PARM_REQ)
-     payload_bytes_written = write(payload.nodes(), mme_msg.mmdata.cm_slac_parm_req, payload_size, plugn.encode_big_endianess ? Endianess::big : Endianess:: machine);
-    else if (mme_msg.mmtype == mme::CM_SLAC_PARM_CNF)
-     payload_bytes_written = write(payload.nodes(), mme_msg.mmdata.cm_slac_parm_cnf, payload_size, plugn.encode_big_endianess ? Endianess::big : Endianess:: machine);
-    else if (mme_msg.mmtype == mme::CM_START_ATTEN_CHAR_IND)
-     payload_bytes_written = write(payload.nodes(), mme_msg.mmdata.cm_start_atten_char_ind, payload_size, plugn.encode_big_endianess ? Endianess::big : Endianess:: machine);
-    else if (mme_msg.mmtype == mme::CM_MNBC_SOUND_IND)
-     payload_bytes_written = write(payload.nodes(), mme_msg.mmdata.cm_mnbc_sound_ind, payload_size, plugn.encode_big_endianess ? Endianess::big : Endianess:: machine);
-    else if (mme_msg.mmtype == mme::CM_ATTEN_CHAR_IND)
-     payload_bytes_written = write(payload.nodes(), mme_msg.mmdata.cm_atten_char_ind, payload_size, plugn.encode_big_endianess ? Endianess::big : Endianess:: machine);
-    else if (mme_msg.mmtype == mme::CM_ATTEN_CHAR_RSP)
-     payload_bytes_written = write(payload.nodes(), mme_msg.mmdata.cm_atten_char_rsp, payload_size, plugn.encode_big_endianess ? Endianess::big : Endianess:: machine);
-    else if (mme_msg.mmtype == mme::CM_ATTEN_PROFILE_IND)
-     payload_bytes_written = write(payload.nodes(), mme_msg.mmdata.cm_atten_profile_ind, payload_size, plugn.encode_big_endianess ? Endianess::big : Endianess:: machine);
-    else if (mme_msg.mmtype == mme::CM_VALIDATE_REQ)
-     payload_bytes_written = write(payload.nodes(), mme_msg.mmdata.cm_validate_req, payload_size, plugn.encode_big_endianess ? Endianess::big : Endianess:: machine);
-    else if (mme_msg.mmtype == mme::CM_VALIDATE_CNF)
-     payload_bytes_written = write(payload.nodes(), mme_msg.mmdata.cm_validate_cnf, payload_size, plugn.encode_big_endianess ? Endianess::big : Endianess:: machine);
-    else if (mme_msg.mmtype == mme::CM_SLAC_MATCH_REQ)
-     payload_bytes_written = write(payload.nodes(), mme_msg.mmdata.cm_slac_match_req, payload_size, plugn.encode_big_endianess ? Endianess::big : Endianess:: machine);
-    else if (mme_msg.mmtype == mme::CM_SLAC_MATCH_CNF)
-     payload_bytes_written = write(payload.nodes(), mme_msg.mmdata.cm_slac_match_cnf, payload_size, plugn.encode_big_endianess ? Endianess::big : Endianess:: machine);
-    else if (mme_msg.mmtype == mme::CM_SET_KEY_REQ)
-     payload_bytes_written = write(payload.nodes(), mme_msg.mmdata.cm_set_key_req, payload_size, plugn.encode_big_endianess ? Endianess::big : Endianess:: machine);
-    else if (mme_msg.mmtype == mme::CM_AMP_MAP_REQ)
-     payload_bytes_written = write(payload.nodes(), mme_msg.mmdata.cm_amp_map_req, payload_size, plugn.encode_big_endianess ? Endianess::big : Endianess:: machine);
-    else if (mme_msg.mmtype == mme::CM_AMP_MAP_CNF)
-     payload_bytes_written = write(payload.nodes(), mme_msg.mmdata.cm_amp_map_cnf, payload_size, plugn.encode_big_endianess ? Endianess::big : Endianess:: machine);
+    if (mmtype == mme::CM_SLAC_PARM_REQ)
+     payload_bytes_written = write(payload.nodes(), mme_msg.mmdata.cm_slac_parm_req, payload_size, plugn.encode_big_endianness ? Endianness::big : Endianness:: machine);
+    else if (mmtype == mme::CM_SLAC_PARM_CNF)
+     payload_bytes_written = write(payload.nodes(), mme_msg.mmdata.cm_slac_parm_cnf, payload_size, plugn.encode_big_endianness ? Endianness::big : Endianness:: machine);
+    else if (mmtype == mme::CM_START_ATTEN_CHAR_IND)
+     payload_bytes_written = write(payload.nodes(), mme_msg.mmdata.cm_start_atten_char_ind, payload_size, plugn.encode_big_endianness ? Endianness::big : Endianness:: machine);
+    else if (mmtype == mme::CM_MNBC_SOUND_IND)
+     payload_bytes_written = write(payload.nodes(), mme_msg.mmdata.cm_mnbc_sound_ind, payload_size, plugn.encode_big_endianness ? Endianness::big : Endianness:: machine);
+    else if (mmtype == mme::CM_ATTEN_CHAR_IND)
+     payload_bytes_written = write(payload.nodes(), mme_msg.mmdata.cm_atten_char_ind, payload_size, plugn.encode_big_endianness ? Endianness::big : Endianness:: machine);
+    else if (mmtype == mme::CM_ATTEN_CHAR_RSP)
+     payload_bytes_written = write(payload.nodes(), mme_msg.mmdata.cm_atten_char_rsp, payload_size, plugn.encode_big_endianness ? Endianness::big : Endianness:: machine);
+    else if (mmtype == mme::CM_ATTEN_PROFILE_IND)
+     payload_bytes_written = write(payload.nodes(), mme_msg.mmdata.cm_atten_profile_ind, payload_size, plugn.encode_big_endianness ? Endianness::big : Endianness:: machine);
+    else if (mmtype == mme::CM_VALIDATE_REQ)
+     payload_bytes_written = write(payload.nodes(), mme_msg.mmdata.cm_validate_req, payload_size, plugn.encode_big_endianness ? Endianness::big : Endianness:: machine);
+    else if (mmtype == mme::CM_VALIDATE_CNF)
+     payload_bytes_written = write(payload.nodes(), mme_msg.mmdata.cm_validate_cnf, payload_size, plugn.encode_big_endianness ? Endianness::big : Endianness:: machine);
+    else if (mmtype == mme::CM_SLAC_MATCH_REQ)
+     payload_bytes_written = write(payload.nodes(), mme_msg.mmdata.cm_slac_match_req, payload_size, plugn.encode_big_endianness ? Endianness::big : Endianness:: machine);
+    else if (mmtype == mme::CM_SLAC_MATCH_CNF)
+     payload_bytes_written = write(payload.nodes(), mme_msg.mmdata.cm_slac_match_cnf, payload_size, plugn.encode_big_endianness ? Endianness::big : Endianness:: machine);
+    else if (mmtype == mme::CM_SET_KEY_REQ)
+     payload_bytes_written = write(payload.nodes(), mme_msg.mmdata.cm_set_key_req, payload_size, plugn.encode_big_endianness ? Endianness::big : Endianness:: machine);
+    else if (mmtype == mme::CM_AMP_MAP_REQ)
+     payload_bytes_written = write(payload.nodes(), mme_msg.mmdata.cm_amp_map_req, payload_size, plugn.encode_big_endianness ? Endianness::big : Endianness:: machine);
+    else if (mmtype == mme::CM_AMP_MAP_CNF)
+     payload_bytes_written = write(payload.nodes(), mme_msg.mmdata.cm_amp_map_cnf, payload_size, plugn.encode_big_endianness ? Endianness::big : Endianness:: machine);
     
     if (print_debug) 
       std::cout << mme_msg << std::endl;
