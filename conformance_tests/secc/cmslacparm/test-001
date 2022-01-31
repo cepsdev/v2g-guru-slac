@@ -1,0 +1,88 @@
+kind Event;
+kind Systemstate;
+kind Guard;
+
+macro TestCase{
+    TC_SECC_CMN_VTB_CmSlacParm_001; 
+    Verdict;
+};
+
+Event evStartTestCase, evTT_match_response_timeout,evComputeVerdict, EXIT;
+Systemstate current_session_id, current_run_id_content, cm_slac_parm_cnf_validity_ok;
+
+
+Guard gMessageOk,gMessageNOk;
+gMessageOk = cm_slac_parm_cnf_validity_ok;
+gMessageNOk = !gMessageOk;
+
+current_session_id = 0;
+cm_slac_parm_cnf_validity_ok = 0;
+
+sm{
+    Verdict;
+    states{Initial;Passed;Failed;};
+    t{Initial;Passed;evComputeVerdict;gMessageOk;};
+    t{Initial;Failed;evComputeVerdict;gMessageNOk;};
+};
+
+
+sm{
+    TC_SECC_CMN_VTB_CmSlacParm_001;
+    states{ Initial;
+            Failed;
+            Passed;
+            Waiting;
+    };
+
+    sm{
+        TestSteps;
+        states{
+            Initial;
+            SendCmSlacParmReq;
+            WaitForCmSlacParmCnf;
+            TimeoutReached;
+            CmSlacParmCnfReceived;
+            MessageInvalid;
+            Passed;
+        };
+        Actions{
+            doSendCmSlacParmReq{
+                {
+                   
+                    current_session_id = current_session_id + 1;
+                    current_run_id_content = {current_session_id;0;0;0;0;0;0;0;};
+                    evCM_SLAC_PARM_REQ(
+                        payload{
+                            run_id{current_session_id;0;0;0;0;0;0;0;};
+                            application_type{0;};
+                            security_type{0;};
+                        }
+                    );
+                }
+            };
+            doStartTT_match_responseTimeout{
+                    start_timer(TT_match_response,evTT_match_response_timeout,TT_match_response_timeout);
+            };
+
+            doStopTest{
+                {
+                    evComputeVerdict;
+                    EXIT;
+                };
+            };
+
+            doCheckMessage{
+                cm_slac_parm_cnf_validity_ok = argv(1).payload.run_id.content() == current_run_id_content;
+            };
+        };
+        t{Initial;SendCmSlacParmReq;doSendCmSlacParmReq;doStartTT_match_responseTimeout;};
+        t{SendCmSlacParmReq;WaitForCmSlacParmCnf;};
+        t{WaitForCmSlacParmCnf;CmSlacParmCnfReceived;evCM_SLAC_PARM_CNF;doCheckMessage;};
+        t{CmSlacParmCnfReceived;Passed;gMessageOk;doStopTest;};
+        t{CmSlacParmCnfReceived;MessageInvalid;gMessageNOk;doStopTest;};
+        t{WaitForCmSlacParmCnf;TimeoutReached;evTT_match_response_timeout;doStopTest;};
+    };
+    
+    t{Initial;Waiting;};
+    t{Waiting; TestSteps;evStartTestCase;};
+};
