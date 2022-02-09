@@ -68,7 +68,8 @@ void mme4ceps_plugin::handle_homeplug_mme(homeplug_mme_generic* msg, size_t mme_
 
   auto it = mme_msg_to_symbol_table_setup_routines.find(msg->mmtype);
   if (it == mme_msg_to_symbol_table_setup_routines.end()){ 
-    std::cerr << "OH\n" << "OH\n"<< "OH\n"<< "OH\n"<< "OH\n"<< "OH\n" <<std::endl;
+    std::cerr << "***[MME Plugin] Unknown Message:\n\n" <<std::endl;
+    std::cerr << *msg << std::endl << std::endl;
     return;}
   if (associated_ceps_block == nullptr) return;
   if (!(this->*(it->second))(msg, mme_size)) return;
