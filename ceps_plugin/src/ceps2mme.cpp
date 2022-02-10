@@ -292,6 +292,8 @@ size_t write(std::vector<ceps::ast::Nodebase_ptr> const & v, cm_slac_match_req_t
      written += write_bytes(&strct,((uint8_t*)&msg.evse_mac),((uint8_t*)&msg.evse_mac) + sizeof(msg.evse_mac));
     else if (name == "run_id")
      written += write_bytes(&strct,((uint8_t*)&msg.run_id),((uint8_t*)&msg.run_id) + sizeof(msg.run_id));
+    else if (name == "rsvd")
+     written += write_bytes(&strct,((uint8_t*)&msg.rsvd),((u_int8_t*)&msg.rsvd) + sizeof(msg.rsvd));
   }
   return written;
 } 
@@ -328,6 +330,8 @@ size_t write(std::vector<ceps::ast::Nodebase_ptr> const & v, cm_slac_match_cnf_t
      written += write_bytes(&strct,((uint8_t*)&msg.nid),((uint8_t*)&msg.nid) + sizeof(msg.nid));
     else if (name == "nmk")
      written += write_bytes(&strct,((uint8_t*)&msg.nmk),((uint8_t*)&msg.nmk) + sizeof(msg.nmk));
+    else if (name == "rsvd")
+     written += write_bytes(&strct,((uint8_t*)&msg.rsvd),((uint8_t*)&msg.rsvd) + sizeof(msg.rsvd));
   }
   return written;
 } 
