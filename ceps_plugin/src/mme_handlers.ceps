@@ -270,6 +270,9 @@ macro on_mme_cm_slac_match_req{
             run_id{
                 mme_run_id;
             };
+            rsvd{
+                mme_rsvd;
+            };
         }
     );
 };
@@ -307,6 +310,9 @@ macro on_mme_cm_slac_match_cnf{
             };
             nmk{
                 mme_nmk;
+            };
+            rsvd{
+                mme_rsvd;
             };
         }
     );

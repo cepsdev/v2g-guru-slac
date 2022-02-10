@@ -140,6 +140,7 @@ bool mme4ceps_plugin::mme_msg_cm_slac_match_req_setup_symtbl(homeplug_mme_generi
     ceps::interpreter::set_val("mme_pev_mac",cm_slac_match_req.pev_mac,cm_slac_match_req.pev_mac+sizeof(cm_slac_match_req.pev_mac),scope);
     ceps::interpreter::set_val("mme_evse_id",cm_slac_match_req.evse_id,cm_slac_match_req.evse_id+sizeof(cm_slac_match_req.evse_id),scope);
     ceps::interpreter::set_val("mme_evse_mac",cm_slac_match_req.evse_mac,cm_slac_match_req.evse_mac+sizeof(cm_slac_match_req.evse_mac),scope);
+    ceps::interpreter::set_val("mme_rsvd",cm_slac_match_req.rsvd,cm_slac_match_req.rsvd+sizeof(cm_slac_match_req.rsvd),scope);
     return true;
 }
 
@@ -156,6 +157,7 @@ bool mme4ceps_plugin::mme_msg_cm_slac_match_cnf_setup_symtbl(homeplug_mme_generi
     ceps::interpreter::set_val("mme_evse_mac",cm_slac_match_cnf.evse_mac,cm_slac_match_cnf.evse_mac+sizeof(cm_slac_match_cnf.evse_mac),scope);
     ceps::interpreter::set_val("mme_nid",cm_slac_match_cnf.nid,cm_slac_match_cnf.nid+sizeof(cm_slac_match_cnf.nid),scope);
     ceps::interpreter::set_val("mme_nmk",cm_slac_match_cnf.nmk,cm_slac_match_cnf.nmk+sizeof(cm_slac_match_cnf.nmk),scope);
+    ceps::interpreter::set_val("mme_rsvd",cm_slac_match_cnf.rsvd,cm_slac_match_cnf.rsvd+sizeof(cm_slac_match_cnf.rsvd),scope);
     return true;
 }
   
