@@ -38,6 +38,7 @@ SOFTWARE.
 #include <stdlib.h>
 #include <map>
 #include <algorithm>
+#include <future>
 #include <netinet/sctp.h> 
 
 #include "mme4ceps.hpp"
@@ -323,11 +324,88 @@ static ceps::ast::node_t plugin_send_mme(ceps::ast::node_callparameters_t params
     return nullptr;
 }
 
+void mme4ceps_plugin::send_message(ceps::ast::Struct_ptr ceps_msg){
+    using namespace ceps::ast;
+    auto msg_name = ceps::ast::name(*ceps_msg);
+    bool found{};
+    bool no_connection{};
+
+
+    int commfd = -1;
+    sockaddr_in last_client = {0};
+    socklen_t last_client_len{};
+    Channel ch{};
+    {
+      std::lock_guard g{commfd_mtx};
+      commfd = plugn.commfd;
+      last_client = plugn.last_client;
+      last_client_len = plugn.last_client_len;
+      no_connection = commfd == -1;
+      if (!no_connection){
+        auto it = channels.begin();
+        for(;it != channels.end();++it){
+          if (it->second.message.name == msg_name) { ch = it->second;break;}
+        }
+        found = it != channels.end();
+      }
+    }
+   
+    if (no_connection)
+    {
+      std::cerr << "*** Error [V2G MME Plugin: send_v2g_low_level("<< msg_name << "{...}) call]: No connection.\n";
+      return; 
+    }
+    else if (!found)
+    {
+      std::cerr << "*** Error [V2G MME Plugin: send_v2g_low_level("<< msg_name << "{...}) call]: No channel accepts this message.\n";
+      return; 
+    }
+
+    std::vector<char> data;
+    std::vector< std::pair< size_t , size_t> > positions;
+
+    std::pair< size_t , size_t> last_pair {};
+
+    for(auto p: children(*ceps_msg)){
+      if (!is<Ast_node_kind::structdef>(p)) continue;
+      auto field_name = ceps::ast::name(as_struct_ref(p));
+      short field_ctr = 1;
+      for(auto const & field: ch.message.fields){
+        if (field.name != field_name) { ++field_ctr; continue; }
+        
+        if (field.type == Channel::type_encoding::i32) {
+          auto enc_size = sizeof(short) + sizeof(std::int32_t);
+          last_pair = {last_pair.first+last_pair.second, enc_size };
+          data.reserve(data.size() + enc_size);
+          *((short*) (data.data() + last_pair.first)) = field_ctr;
+          std::int32_t val{};
+          if (children(as_struct_ref(p)).size())
+           if ( is<Ast_node_kind::int_literal>(children(as_struct_ref(p))[0]))
+            val = value(as_int_ref(children(as_struct_ref(p))[0]));                              
+          *((std::int32_t*)(data.data() + last_pair.first + sizeof(std::int32_t)) ) = val;        
+        } else if (field.type == Channel::type_encoding::d64) {
+          auto enc_size = sizeof(short) + sizeof(std::double_t);
+          last_pair = {last_pair.first+last_pair.second, sizeof(short) + sizeof(std::double_t) };
+          data.reserve(data.size() + enc_size);
+          *((short*)(data.data() + last_pair.first)) = field_ctr;
+          std::double_t val{};
+          if (children(as_struct_ref(p)).size())
+           if ( is<Ast_node_kind::float_literal>(children(as_struct_ref(p))[0]))
+            val = value(as_double_ref(children(as_struct_ref(p))[0]));
+           else
+            std::cerr << "*** Warning [V2G MME Plugin: send_v2g_low_level("<< msg_name << "{...}) call]: Type mismatch (" << field.name << ").\n";
+          *((std::double_t*)(data.data() + last_pair.first + sizeof(std::double_t)) ) = val;        
+        }
+        positions.push_back(last_pair);
+      }
+    }
+}
+
 static ceps::ast::node_t plugin_send_generic(ceps::ast::node_callparameters_t params){
     auto msg = get_first_child(params);
-    //auto ns = ceps::ast::Nodeset{msg}["mme"];
-    //auto header = ns["header"];
-    std::cerr << "\nplugin_send_generic: " << *params << std::endl;
+    if (!ceps::ast::is<ceps::ast::Ast_node_kind::structdef>(msg)) return nullptr;
+    auto ceps_msg = ceps::ast::as_struct_ptr(msg);
+    plugn.send_message(ceps_msg);
     return nullptr;
 }
 

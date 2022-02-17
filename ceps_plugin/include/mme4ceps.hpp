@@ -61,6 +61,36 @@ class mme4ceps_plugin{
 
     using channel_t = short;
 
+    struct Channel{
+      channel_t chidx;
+      enum Status{
+                  NotInitialized,
+                  Established,
+                  WaitForMessageName,
+                  WaitForNumberOfMessageEntries,
+                  WaitForType,
+                  WaitForFieldName};
+      Status status{NotInitialized};
+      int remaining_field_entries;
+      enum  type_encoding {
+        i32 = 5,
+        i64,
+        d64,
+        str
+      };
+      struct message_field_t {
+        std::string name;
+        type_encoding type;
+      };
+      struct message_t{
+        std::string name;
+        std::vector<message_field_t> fields;
+      };
+      message_t message;
+    };
+
+    std::map<channel_t,Channel> channels;
+
     struct logical_connection_info_t{
         enum type: short{
             i32 = 5,
@@ -121,6 +151,8 @@ class mme4ceps_plugin{
     void handle_homeplug_mme(homeplug_mme_generic*, size_t mme_size);
 
     void execute_ceps(ceps::ast::Nodeset);
+
+    void send_message(ceps::ast::Struct_ptr);
 
     result_t start_sctp_server(std::string port);
 };
