@@ -39,28 +39,28 @@ enum  type_encoding: short{
 
 template <typename T>
     struct Volt{
-        T v;
+        T v {};
         Volt() = default;
         Volt(T v) : v{v} {}        
     };
 
 template <typename T>
     struct Hz{
-        T v;
+        T v {};
         Hz() = default;
         Hz(T v) : v{v} {}        
     };
 
 template <typename T>
     struct Percentage{
-        T v;
+        T v{};
         Percentage() = default;
         Percentage(T v) : v{v} {}        
     };
 
 
 struct Oscillator{
-    Hz<num_t> freq;
+    Hz<num_t> freq{};
 };
 
 class Controlpilot{
@@ -69,7 +69,6 @@ class Controlpilot{
             Volt<num_t> voltage;
             Percentage<num_t> pwm_duty_cycle;
         };
-    private:
         Oscillator oscillator;
         bool oscillator_active = false;
         bool valid = false;
@@ -222,7 +221,8 @@ void comm_handler(std::pair<int,addrinfo*> sckt_addr, Controlpilot & ctlplt){
         int handshake_cmd = 0;
         sctp_sndrcvinfo sri = {0};
         sri.sinfo_stream = 1;
-        auto r = sctp_sendmsg(sckt, &handshake_cmd,sizeof(handshake_cmd),addr->ai_addr,addr->ai_addrlen,0,0,sri.sinfo_stream,0,0 ) ;
+        auto r = 0;
+        r = sctp_sendmsg(sckt, &handshake_cmd,sizeof(handshake_cmd),addr->ai_addr,addr->ai_addrlen,0,0,sri.sinfo_stream,0,0 ) ;
         if (r < 0){
             auto err = errno;
             std::cerr << "*** Fatal Error:" << std::endl;
@@ -298,28 +298,37 @@ void comm_handler(std::pair<int,addrinfo*> sckt_addr, Controlpilot & ctlplt){
                 std::cerr << "*** Fatal Error:" << std::endl;
                 exit(1);
             }
-
-
             for(;;){
                 auto reply_result = sctp_recvmsg(sckt,buffer,sizeof(buffer), (sockaddr*)&peeraddr,&len,&sri, &msg_flags);
                 if(reply_result == 4 && *((int*)buffer) == 1 /*index of message*/ && sri.sinfo_stream == 1){ // start of message
+                std::cerr << "Receiving message\n";
                     for(;;){
                         reply_result = sctp_recvmsg(sckt,buffer,sizeof(buffer), (sockaddr*)&peeraddr,&len,&sri, &msg_flags);
                         if(reply_result == 4 && *((int*)buffer) == -1) {
                             ctlplt.write( Controlpilot::state_t{ voltage, pwm_duty_cycle }, Oscillator{freq}, oscillator_active  );
                             break;
                         }
+                        std::cerr << "Field id: " << *((short*) buffer) << "\n";
                         if (*((short*) buffer) == 1){
                             voltage =  Volt<double>(*(double*)(buffer + sizeof(short)));
                         } else if (*((short*) buffer) == 2){
                             pwm_duty_cycle =  Percentage<double>(*(double*)(buffer + sizeof(short)));
+                            std::cerr << "pwm_duty_cycle: " << pwm_duty_cycle.v << "\n";
+                            std::cerr << "pwm_duty_cycle: " << *(double*)(buffer + sizeof(short)) << "\n";
                         } else if (*((short*) buffer) == 3){
                             if ( *(int*)(buffer + sizeof(short)) ) oscillator_active = true; else oscillator_active = false;
                         } else if (*((short*) buffer) == 4){
                             freq =  Hz<double>(*(double*)(buffer + sizeof(short)));
+                        } else {
+                            std::cerr << "*** Warning: Unknown field id: " << *((short*) buffer) << "\n"; 
                         }
                     }
-                }                 
+                }       
+                std::cerr << "Message received, Data:\n";
+                std::cerr << "duty_cycle = " << ctlplt.target_state.pwm_duty_cycle.v << "\n";
+                std::cerr << "voltage = " << ctlplt.target_state.voltage.v << "\n";
+                std::cerr << "oscillator = " << ctlplt.oscillator.freq.v << "\n";
+                std::cerr << "oscillator_active = " << ctlplt.oscillator_active << "\n";
             }
         }
         std::cout << reply_result << std::endl;

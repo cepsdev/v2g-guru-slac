@@ -329,17 +329,18 @@ void mme4ceps_plugin::send_message(ceps::ast::Struct_ptr ceps_msg){
     auto msg_name = ceps::ast::name(*ceps_msg);
     bool found{};
     bool no_connection{};
+    bool print_debug {};
 
 
     int commfd = -1;
-    sockaddr_in last_client = {0};
-    socklen_t last_client_len{};
+    sockaddr_in client = {0};
+    socklen_t client_len{};
     Channel ch{};
     {
       std::lock_guard g{commfd_mtx};
       commfd = plugn.commfd;
-      last_client = plugn.last_client;
-      last_client_len = plugn.last_client_len;
+      client = plugn.last_client;
+      client_len = plugn.last_client_len;
       no_connection = commfd == -1;
       if (!no_connection){
         auto it = channels.begin();
@@ -362,31 +363,50 @@ void mme4ceps_plugin::send_message(ceps::ast::Struct_ptr ceps_msg){
     }
 
     std::vector<char> data;
-    std::vector< std::pair< size_t , size_t> > positions;
-
+    std::vector< std::pair< size_t , size_t> > positions {};
     std::pair< size_t , size_t> last_pair {};
 
     for(auto p: children(*ceps_msg)){
       if (!is<Ast_node_kind::structdef>(p)) continue;
       auto field_name = ceps::ast::name(as_struct_ref(p));
       short field_ctr = 1;
+      bool field_name_matched = false;
+
       for(auto const & field: ch.message.fields){
-        if (field.name != field_name) { ++field_ctr; continue; }
-        
+        if (field.name != field_name) {
+          ++field_ctr; 
+          continue; 
+        }
+        field_name_matched = true;
+
+        auto enc_size = sizeof(short) + (field.type == Channel::type_encoding::i32 ? 
+                                            sizeof(std::int32_t) : (field.type == Channel::type_encoding::d64 ? sizeof(std::double_t) : 4 ) );
+
+        if (print_debug) std::cout << " last_pair is (" << last_pair.first << "/" << last_pair.second << ")\n";
+        if (print_debug) std::cout << " enc_size is (" << enc_size << ")\n";        
+
+        last_pair = {last_pair.first+last_pair.second, enc_size };
+
+        if (print_debug) std::cout << " data size is " << data.size() << "\n";
+
+        data.resize(data.size() + enc_size);
+
+        if (print_debug) std::cout << " last_pair is (" << last_pair.first << "/" << last_pair.second << ")\n";
+        if (print_debug) std::cout << " data size is " << data.size() << "\n";
+
         if (field.type == Channel::type_encoding::i32) {
-          auto enc_size = sizeof(short) + sizeof(std::int32_t);
-          last_pair = {last_pair.first+last_pair.second, enc_size };
-          data.reserve(data.size() + enc_size);
           *((short*) (data.data() + last_pair.first)) = field_ctr;
           std::int32_t val{};
           if (children(as_struct_ref(p)).size())
            if ( is<Ast_node_kind::int_literal>(children(as_struct_ref(p))[0]))
-            val = value(as_int_ref(children(as_struct_ref(p))[0]));                              
-          *((std::int32_t*)(data.data() + last_pair.first + sizeof(std::int32_t)) ) = val;        
+            val = value(as_int_ref(children(as_struct_ref(p))[0]));
+           else 
+            std::cerr << "*** Warning [V2G MME Plugin: send_v2g_low_level("<< msg_name << "{...}) call]: Type mismatch (" << field.name << ").\n";
+          *((std::int32_t*)(data.data() + last_pair.first + sizeof(short)) ) = val;
+          
+          if (print_debug) std::cout << " value is " << val << "\n";        
+
         } else if (field.type == Channel::type_encoding::d64) {
-          auto enc_size = sizeof(short) + sizeof(std::double_t);
-          last_pair = {last_pair.first+last_pair.second, sizeof(short) + sizeof(std::double_t) };
-          data.reserve(data.size() + enc_size);
           *((short*)(data.data() + last_pair.first)) = field_ctr;
           std::double_t val{};
           if (children(as_struct_ref(p)).size())
@@ -394,10 +414,38 @@ void mme4ceps_plugin::send_message(ceps::ast::Struct_ptr ceps_msg){
             val = value(as_double_ref(children(as_struct_ref(p))[0]));
            else
             std::cerr << "*** Warning [V2G MME Plugin: send_v2g_low_level("<< msg_name << "{...}) call]: Type mismatch (" << field.name << ").\n";
-          *((std::double_t*)(data.data() + last_pair.first + sizeof(std::double_t)) ) = val;        
+          *((std::double_t*)(data.data() + last_pair.first + sizeof(short)) ) = val;
+          if (print_debug) std::cout << " value is " << val << "\n";        
         }
-        positions.push_back(last_pair);
+        positions.push_back(last_pair);        
       }
+      
+      if (!field_name_matched){
+        std::cerr << "*** Warning [V2G MME Plugin: send_v2g_low_level("<< msg_name << "{...}) call]: Unknown field defined (" << field_name << ").\n";
+      }
+    }
+    if (!positions.size()) return;    
+    sctp_sndrcvinfo sri = {0};
+    sri.sinfo_stream = ch.chidx;
+    int msg_idx = 1;
+    int msg_flags{};
+    if (print_debug) for(size_t i = 0; i < data.size(); ++i) 
+      std::cerr <<"data["<<i<<"] = " << (int) data[i] << "\n";
+
+    auto r = sctp_sendmsg(commfd, &msg_idx,sizeof(msg_idx),(sockaddr*) &client,client_len,0,0,sri.sinfo_stream,0,0 ) ;
+    if (r < 0){
+      std::cerr << "*** Error [V2G MME Plugin: send_v2g_low_level("<< msg_name << "{...}) call]: Failed to send message.\n";
+    }
+    int eof = -1;
+    for (auto p : positions){
+      r = sctp_sendmsg(commfd, data.data() + p.first ,p.second,(sockaddr*) &client,client_len,0,0,sri.sinfo_stream,0,0 ) ;
+      if (r < 0){
+        std::cerr << "*** Error [V2G MME Plugin: send_v2g_low_level("<< msg_name << "{...}) call]: Failed to send message.\n";
+      }   
+    }
+    r = sctp_sendmsg(commfd, &eof,sizeof(eof),(sockaddr*) &client,client_len,0,0,sri.sinfo_stream,0,0 ) ;
+    if (r < 0){
+      std::cerr << "*** Error [V2G MME Plugin: send_v2g_low_level("<< msg_name << "{...}) call]: Failed to send message.\n";
     }
 }
 
