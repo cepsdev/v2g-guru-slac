@@ -1,7 +1,7 @@
 /*
 MIT License
 
-Copyright (c) 2021 Tomas Prerovsky
+Copyright (c) 2022 Tomas Prerovsky, github.com/cepsdev/v2g-guru-slac.git
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

@@ -342,6 +342,9 @@ void mme4ceps_plugin::send_message(ceps::ast::Struct_ptr ceps_msg){
       client = plugn.last_client;
       client_len = plugn.last_client_len;
       no_connection = commfd == -1;
+      if (no_connection) 
+        std::cerr << "*** Error [V2G MME Plugin: send_v2g_low_level(" << msg_name<<"): No remote host." <<"\n";
+      
       if (!no_connection){
         auto it = channels.begin();
         for(;it != channels.end();++it){
